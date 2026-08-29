@@ -55,4 +55,14 @@ Vagrant.configure("2") do |config|
     end
     agent.vm.provision "shell", inline: agent_script
   end
+   config.vm.define "gitlab" do |gitlab|
+    gitlab.vm.box = "ubuntu/jammy64"
+    gitlab.vm.network "private_network", ip: "192.168.56.20"
+    gitlab.vm.hostname = "gitlab-server"
+    gitlab.vm.provider "virtualbox" do |vb|
+      vb.name = "code-keeper-gitlab"
+      vb.memory = "4096"
+      vb.cpus = 2
+    end
+  end
 end
