@@ -1,0 +1,15 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+
+# Docker
+*.env
+*.key
+*.crt
+
+# Vagrant
+.vagrant
+*.log

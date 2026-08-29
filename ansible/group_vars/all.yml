@@ -1,0 +1,4 @@
+---
+gitlab_external_url: "http://192.168.56.20"
+
+gitlab_root_password: "StrongPassword!"
