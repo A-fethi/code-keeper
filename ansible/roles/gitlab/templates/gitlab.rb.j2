@@ -1,0 +1,31 @@
+# GitLab URL
+external_url '{{ gitlab_external_url }}'
+
+# Initial root password on first install
+gitlab_rails['initial_root_password'] = '{{ gitlab_root_password }}'
+
+# ==========================================
+# FREE TIER MEMORY OPTIMIZATIONS (1GB RAM)
+# ==========================================
+
+# Run Puma web server in single-process mode (saves ~500MB RAM)
+puma['worker_processes'] = 0
+puma['min_threads'] = 1
+puma['max_threads'] = 2
+puma['worker_timeout'] = 60
+
+# Reduce background job worker concurrency
+sidekiq['concurrency'] = 1
+
+# Reduce PostgreSQL database memory usage
+postgresql['shared_buffers'] = "128MB"
+postgresql['max_worker_processes'] = 1
+
+# Disable heavy monitoring services not needed for this lab
+prometheus['enable'] = false
+alertmanager['enable'] = false
+node_exporter['enable'] = false
+redis_exporter['enable'] = false
+postgres_exporter['enable'] = false
+gitlab_exporter['enable'] = false
+grafana['enable'] = false

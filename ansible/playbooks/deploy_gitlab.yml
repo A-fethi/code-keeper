@@ -1,0 +1,6 @@
+---
+- name: Deploy GitLab CE on Virtual Machine
+  hosts: gitlab_server
+  become: true
+  roles:
+    - gitlab
