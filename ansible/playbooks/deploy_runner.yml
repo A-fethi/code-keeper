@@ -1,0 +1,6 @@
+---
+- name: Install and Configure GitLab Runner and Docker
+  hosts: gitlab_server
+  become: true
+  roles:
+    - runner
