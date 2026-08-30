@@ -1,0 +1,49 @@
+---
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - openssh-server
+      - ca-certificates
+      - tzdata
+      - perl
+    state: present
+    update_cache: true
+
+- name: Download GitLab CE repository setup script
+  ansible.builtin.get_url:
+    url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
+    dest: /tmp/gitlab_ce_script.deb.sh
+    mode: '0755'
+
+- name: Run GitLab CE repository setup script
+  ansible.builtin.command:
+    cmd: bash /tmp/gitlab_ce_script.deb.sh
+    creates: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
+
+- name: Install GitLab CE package
+  ansible.builtin.apt:
+    name: gitlab-ce
+    state: present
+    update_cache: true
+
+- name: Deploy GitLab configuration file (/etc/gitlab/gitlab.rb)
+  ansible.builtin.template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+    owner: root
+    group: root
+    mode: '0600'
+  notify: Reconfigure GitLab
+
+- name: Apply configuration if changed
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for GitLab web service to respond
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/users/sign_in"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 30
+  delay: 10
