@@ -19,23 +19,83 @@ Code-Keeper is a complete DevOps automation project built on top of the **Cloud-
 
 ## 🏗️ Architecture Overview
 
-      [ Developer Git Push ]
-                                │
-                                ▼
-   ┌─────────────────────────────────────────────────────────┐
-   │     Self-Hosted GitLab CE Server (192.168.56.20)        │
-   │           Provisioned via Ansible Automation            │
-   └────────────────────────────┬────────────────────────────┘
-                                │
-                                ▼
-   ┌─────────────────────────────────────────────────────────┐
-   │     GitLab Runner (Docker / Privileged Executor)        │
-   └───────┬─────────────────────────────────────────┬───────┘
-           │                                         │
-           ▼                                         ▼
-[ Infrastructure Pipeline ] [ Microservices Pipelines ] (apps/terraform) (api-gateway, inventory, billing) │ │ ├─ 1. Init (terraform init) ├─ 1. Build (compileall) ├─ 2. Validate (syntax check) ├─ 2. Test (pytest) ├─ 3. Plan (generate tfplan) ├─ 3. Scan (Bandit SAST) ├─ 4. Apply to Staging ├─ 4. Containerize (Docker) ├─ 5. Approval (Manual Gate) ├─ 5. Deploy to Staging └─ 6. Apply to Production ├─ 6. Approval (Manual Gate) └─ 7. Deploy to Production │ ▼ ┌──────────────────────────────┐ │ Target Cloud Platform │ │ - Staging Environment │ │ - Production Environment │ └──────────────────────────────┘
-
-
+```mermaid
+---
+config:
+  layout: elk
+---
+graph TD
+    A[Developer Git Push] --> B[Self-Hosted GitLab CE Server<br/>192.168.56.20<br/>Provisioned via Ansible]
+    B --> C[GitLab Runner<br/>Docker / Privileged Executor]
+    C --> D[Infrastructure Pipeline<br/>apps/terraform]
+    C --> E[Microservices Pipelines]
+    
+    D --> D1["1. Init<br/>terraform init"]
+    D1 --> D2["2. Validate<br/>syntax check"]
+    D2 --> D3["3. Plan<br/>generate tfplan"]
+    D3 --> D4["4. Apply to Staging"]
+    D4 --> D5["5. Approval<br/>Manual Gate"]
+    D5 --> D6["6. Apply to Production"]
+    
+    E --> E1["App: api-gateway"]
+    E --> E2["App: inventory"]
+    E --> E3["App: billing"]
+    
+    E1 --> E1a["1. Build<br/>compileall"]
+    E1a --> E1b["2. Test<br/>pytest"]
+    E1b --> E1c["3. Scan<br/>Bandit SAST"]
+    E1c --> E1d["4. Containerize<br/>Docker"]
+    E1d --> E1e["5. Deploy to Staging"]
+    E1e --> E1f["6. Approval<br/>Manual Gate"]
+    E1f --> E1g["7. Deploy to Production"]
+    
+    E2 --> E2a["1. Build<br/>compileall"]
+    E2a --> E2b["2. Test<br/>pytest"]
+    E2b --> E2c["3. Scan<br/>Bandit SAST"]
+    E2c --> E2d["4. Containerize<br/>Docker"]
+    E2d --> E2e["5. Deploy to Staging"]
+    E2e --> E2f["6. Approval<br/>Manual Gate"]
+    E2f --> E2g["7. Deploy to Production"]
+    
+    E3 --> E3a["1. Build<br/>compileall"]
+    E3a --> E3b["2. Test<br/>pytest"]
+    E3b --> E3c["3. Scan<br/>Bandit SAST"]
+    E3c --> E3d["4. Containerize<br/>Docker"]
+    E3d --> E3e["5. Deploy to Staging"]
+    E3e --> E3f["6. Approval<br/>Manual Gate"]
+    E3f --> E3g["7. Deploy to Production"]
+    
+    D6 --> F[Target Cloud Platform]
+    E1g --> F
+    E2g --> F
+    E3g --> F
+    
+    F --> F1["Staging Environment"]
+    F --> F2["Production Environment"]
+    
+    classDef trigger stroke:#fb7185,fill:#fff1f2
+    classDef server stroke:#818cf8,fill:#eef2ff
+    classDef runner stroke:#2dd4bf,fill:#f0fdfa
+    classDef infraPipe stroke:#a78bfa,fill:#f5f3ff
+    classDef microPipe stroke:#fb923c,fill:#fff7ed
+    classDef infraStage stroke:#a78bfa,fill:#f5f3ff
+    classDef microStage stroke:#fb923c,fill:#fff7ed
+    classDef target stroke:#4ade80,fill:#f0fdf4
+    classDef env stroke:#facc15,fill:#fefce8
+    
+    class A trigger
+    class B server
+    class C runner
+    class D infraPipe
+    class E microPipe
+    class D1,D2,D3,D4,D5,D6 infraStage
+    class E1,E2,E3 microPipe
+    class E1a,E1b,E1c,E1d,E1e,E1f,E1g microStage
+    class E2a,E2b,E2c,E2d,E2e,E2f,E2g microStage
+    class E3a,E3b,E3c,E3d,E3e,E3f,E3g microStage
+    class F target
+    class F1,F2 env
+```
 ---
 
 ## 📦 Project Structure & Repositories
