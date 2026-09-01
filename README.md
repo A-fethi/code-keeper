@@ -73,15 +73,15 @@ graph TD
     F --> F1["Staging Environment"]
     F --> F2["Production Environment"]
     
-    classDef trigger stroke:#fb7185,fill:#fff1f2
-    classDef server stroke:#818cf8,fill:#eef2ff
-    classDef runner stroke:#2dd4bf,fill:#f0fdfa
-    classDef infraPipe stroke:#a78bfa,fill:#f5f3ff
-    classDef microPipe stroke:#fb923c,fill:#fff7ed
-    classDef infraStage stroke:#a78bfa,fill:#f5f3ff
-    classDef microStage stroke:#fb923c,fill:#fff7ed
-    classDef target stroke:#4ade80,fill:#f0fdf4
-    classDef env stroke:#facc15,fill:#fefce8
+    classDef trigger stroke:#fb7185,fill:#fff1f2, color:#000000
+    classDef server stroke:#818cf8,fill:#eef2ff, color:#000000
+    classDef runner stroke:#2dd4bf,fill:#f0fdfa, color:#000000
+    classDef infraPipe stroke:#a78bfa,fill:#f5f3ff, color:#000000
+    classDef microPipe stroke:#fb923c,fill:#fff7ed, color:#000000
+    classDef infraStage stroke:#a78bfa,fill:#f5f3ff, color:#000000
+    classDef microStage stroke:#fb923c,fill:#fff7ed, color:#000000
+    classDef target stroke:#4ade80,fill:#f0fdf4, color:#000000
+    classDef env stroke:#facc15,fill:#fefce8, color:#000000
     
     class A trigger
     class B server
