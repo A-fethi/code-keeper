@@ -1,0 +1,74 @@
+image:
+  name: hashicorp/terraform:1.6
+  entrypoint: [""]
+
+stages:
+  - init
+  - validate
+  - plan
+  - apply_staging
+  - approval
+  - apply_production
+
+before_script:
+  - terraform --version
+  - terraform init
+
+# 1. INIT STAGE
+terraform_init:
+  stage: init
+  script:
+    - echo "Terraform initialization successful."
+
+# 2. VALIDATE STAGE
+terraform_validate:
+  stage: validate
+  script:
+    - terraform validate
+
+# 3. PLAN STAGE
+terraform_plan:
+  stage: plan
+  script:
+    - terraform plan -out=tfplan
+  artifacts:
+    name: "tfplan"
+    paths:
+      - tfplan
+    expire_in: 1 hour
+
+# 4. APPLY TO STAGING
+apply_staging:
+  stage: apply_staging
+  environment:
+    name: staging
+  script:
+    - echo "Applying infrastructure changes to Staging environment..."
+    - terraform plan
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# 5. MANUAL APPROVAL GATE
+production_approval:
+  stage: approval
+  environment:
+    name: production
+  script:
+    - echo "Production deployment approved by stakeholder."
+  when: manual
+  allow_failure: false
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# 6. APPLY TO PRODUCTION
+apply_production:
+  stage: apply_production
+  environment:
+    name: production
+  script:
+    - echo "Applying infrastructure changes to Production environment..."
+    - terraform plan
+  needs:
+    - production_approval
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
