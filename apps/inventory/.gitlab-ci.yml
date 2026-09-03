@@ -6,6 +6,7 @@ stages:
   - deploy_staging
   - approval
   - deploy_production
+  
 # 1. BUILD STAGE
 build_app:
   stage: build
@@ -14,6 +15,7 @@ build_app:
     - echo "Compiling Python source files..."
     - python -m compileall app/
     - echo "Build successful."
+
 # 2. TEST STAGE
 test_app:
   stage: test
@@ -23,6 +25,7 @@ test_app:
   script:
     - echo "Running unit tests with pytest..."
     - python -m pytest -v
+
 # 3. SCAN STAGE (Security SAST)
 security_scan:
   stage: scan
@@ -32,6 +35,7 @@ security_scan:
   script:
     - echo "Scanning code for security vulnerabilities with Bandit..."
     - bandit -r app/ -ll -i
+
 # 4. CONTAINERIZE STAGE
 docker_build:
   stage: containerize
@@ -44,6 +48,7 @@ docker_build:
     - echo "Building Docker image for inventory..."
     - docker build -t inventory:latest .
     - echo "Docker image built successfully."
+
 # 5. DEPLOY TO STAGING
 staging_deploy:
   stage: deploy_staging
@@ -55,6 +60,7 @@ staging_deploy:
     - echo "Staging health check ==> OK"
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
 # 6. MANUAL APPROVAL GATE
 production_approval:
   stage: approval
@@ -66,6 +72,7 @@ production_approval:
   allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
 # 7. DEPLOY TO PRODUCTION
 production_deploy:
   stage: deploy_production

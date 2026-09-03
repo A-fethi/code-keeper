@@ -2,11 +2,13 @@ import pytest
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from app.orders import Base, Order, create_order
+
 @pytest.fixture
 def engine():
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     return engine
+
 def test_create_order(engine):
     """Test creating and persisting an order in the database."""
     new_order = {
