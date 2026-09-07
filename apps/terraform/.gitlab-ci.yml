@@ -19,12 +19,14 @@ terraform_init:
   stage: init
   script:
     - echo "Terraform initialization successful."
+    - terraform version
 
 # 2. VALIDATE STAGE
 terraform_validate:
   stage: validate
   script:
     - terraform validate
+    - echo "Validation passed."
 
 # 3. PLAN STAGE
 terraform_plan:
@@ -32,7 +34,7 @@ terraform_plan:
   script:
     - terraform plan -out=tfplan
   artifacts:
-    name: "tfplan"
+    name: "tfplan-$CI_COMMIT_SHORT_SHA"
     paths:
       - tfplan
     expire_in: 1 hour
@@ -42,9 +44,13 @@ apply_staging:
   stage: apply_staging
   environment:
     name: staging
+  needs:
+    - job: terraform_plan
+      artifacts: true
   script:
-    - echo "Applying infrastructure changes to Staging environment..."
-    - terraform plan
+    - echo "Applying infrastructure changes to STAGING environment..."
+    - terraform apply -auto-approve tfplan
+    - echo "Staging apply completed successfully."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
@@ -54,7 +60,7 @@ production_approval:
   environment:
     name: production
   script:
-    - echo "Production deployment approved by stakeholder."
+    - echo "Production deployment approved by $GITLAB_USER_LOGIN at $(date)."
   when: manual
   allow_failure: false
   rules:
@@ -65,10 +71,13 @@ apply_production:
   stage: apply_production
   environment:
     name: production
-  script:
-    - echo "Applying infrastructure changes to Production environment..."
-    - terraform plan
   needs:
+    - job: terraform_plan
+      artifacts: true
     - production_approval
+  script:
+    - echo "Applying infrastructure changes to PRODUCTION environment..."
+    - terraform apply -auto-approve tfplan
+    - echo "Production apply completed successfully."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
