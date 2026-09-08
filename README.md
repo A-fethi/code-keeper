@@ -164,7 +164,17 @@ In accordance with project security guidelines:
 vagrant up gitlab
 ```
 
-### 2. Running Ansible Provisioning
+### 2. Configure google DNS
+```bash
+vagrant ssh gitlab
+sudo resolvectl dns enp0s3 8.8.8.8 1.1.1.1
+sudo resolvectl flush-caches
+# Prioritize IPv4 over IPv6 in /etc/gai.conf
+sudo sed -i 's/#precedence ::ffff:0:0\/96 100/precedence ::ffff:0:0\/96 100/' /etc/gai.conf
+exit
+```
+
+### 3. Running Ansible Provisioning
 ```bash
 cd ansible
 export ANSIBLE_CONFIG=./ansible.cfg
@@ -172,7 +182,7 @@ ansible-playbook playbooks/deploy_gitlab.yml
 ansible-playbook playbooks/deploy_runner.yml
 ```
 
-### 3. Accessing GitLab
+### 4. Accessing GitLab
 
 - **URL**: http://192.168.56.20
 - **Username**: root
