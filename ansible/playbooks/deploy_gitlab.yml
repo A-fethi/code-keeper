@@ -2,5 +2,8 @@
 - name: Deploy GitLab CE on Virtual Machine
   hosts: gitlab_server
   become: true
+  vars_files:
+    - ../group_vars/all.yml
+    - ../group_vars/vault.yml
   roles:
     - gitlab

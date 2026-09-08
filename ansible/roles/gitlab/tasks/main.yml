@@ -173,3 +173,22 @@
       key: "{{ ssh_key_content.content | b64decode | trim }}"
     status_code: [201, 400]
   when: "ssh_key_content.content | b64decode | trim not in (existing_keys.json | map(attribute='key') | list)"
+
+- name: Define AWS CI/CD variables at Group Level
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/groups/code-keeper/variables"
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    body_format: json
+    body:
+      key: "{{ item.key }}"
+      value: "{{ item.value }}"
+      protected: false
+      masked: "{{ item.masked | default(false) }}"
+    status_code: [201, 400] # 400 if variable already exists
+  loop:
+    - { key: 'AWS_ACCESS_KEY_ID', value: "{{ aws_access_key_id }}", masked: false }
+    - { key: 'AWS_SECRET_ACCESS_KEY', value: "{{ aws_secret_access_key }}", masked: true }
+    - { key: 'AWS_DEFAULT_REGION', value: "{{ aws_default_region }}", masked: false }
+    - { key: 'AWS_ACCOUNT_ID', value: "{{ aws_account_id }}", masked: false }
