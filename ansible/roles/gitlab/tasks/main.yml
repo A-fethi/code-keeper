@@ -183,7 +183,7 @@
     body_format: json
     body:
       key: "{{ item.key }}"
-      value: "{{ item.value }}"
+      value: "{{ item.value | trim }}"
       protected: false
       masked: "{{ item.masked | default(false) }}"
     status_code: [201, 400] # 400 if variable already exists
