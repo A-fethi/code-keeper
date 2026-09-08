@@ -9,6 +9,7 @@ stages:
   - apply_staging
   - approval
   - apply_production
+  - destroy
 
 before_script:
   - terraform --version
@@ -86,5 +87,13 @@ apply_production:
     - echo "Applying infrastructure changes to PRODUCTION environment..."
     - terraform apply -auto-approve tfplan
     - echo "Production apply completed successfully."
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+destroy_infrastructure:
+  stage: destroy
+  script:
+    - terraform destroy -auto-approve
+  when: manual
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
