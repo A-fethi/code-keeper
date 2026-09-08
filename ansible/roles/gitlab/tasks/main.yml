@@ -47,3 +47,129 @@
   until: result.status == 200
   retries: 30
   delay: 10
+
+- name: Generate Admin Personal Access Token via gitlab-rails
+  ansible.builtin.shell: |
+    gitlab-rails runner "
+      user = User.find_by_username('root')
+      token = user.personal_access_tokens.find_by(name: 'ansible-iac-token')
+      if token.nil?
+        token = user.personal_access_tokens.create!(
+          name: 'ansible-iac-token',
+          scopes: ['api'],
+          expires_at: 1.year.from_now
+        )
+        token.set_token('{{ gitlab_api_token }}')
+        token.save!
+      end
+    "
+  args:
+    executable: /bin/bash
+  register: token_gen_result
+  changed_when: token_gen_result.rc == 0
+
+- name: Check if 'code-keeper' Group exists
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/groups/code-keeper"
+    method: GET
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    status_code: [200, 404]
+  register: group_check
+
+- name: Create 'code-keeper' Group
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/groups"
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    body_format: json
+    body:
+      name: "code-keeper"
+      path: "code-keeper"
+      visibility: "public"
+    status_code: [201, 400]
+  when: group_check.status == 404
+
+- name: Get 'code-keeper' Group Details (to retrieve numeric ID)
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/groups/code-keeper"
+    method: GET
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    status_code: 200
+  register: group_info
+
+- name: Create the 4 Repositories under code-keeper Group
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/projects"
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    body_format: json
+    body:
+      name: "{{ item }}"
+      path: "{{ item }}"
+      namespace_id: "{{ group_info.json.id }}"
+      visibility: "public"
+      initialize_with_readme: false
+    status_code: [201, 400]
+  loop:
+    - terraform
+    - api-gateway
+    - inventory
+    - billing
+
+- name: Ensure SSH directory exists on host machine
+  ansible.builtin.file:
+    path: "{{ host_ssh_public_key_path | dirname }}"
+    state: directory
+    mode: '0700'
+  delegate_to: localhost
+  become: false
+
+- name: Check if SSH public key exists on host machine
+  ansible.builtin.stat:
+    path: "{{ host_ssh_public_key_path }}"
+  register: ssh_key_stat
+  delegate_to: localhost
+  become: false
+
+- name: Generate SSH key pair if not present
+  community.crypto.openssh_keypair:
+    path: "{{ host_ssh_public_key_path | regex_replace('\\.pub$', '') }}"
+    type: ed25519
+    comment: "admin@code-keeper.local"
+    state: present
+  delegate_to: localhost
+  become: false
+  when: not ssh_key_stat.stat.exists
+
+- name: Read local host SSH public key
+  ansible.builtin.slurp:
+    src: "{{ host_ssh_public_key_path }}"
+  register: ssh_key_content
+  delegate_to: localhost
+  become: false
+
+- name: Check existing SSH keys on GitLab root user
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/user/keys"
+    method: GET
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    status_code: 200
+  register: existing_keys
+
+- name: Add host SSH key to GitLab root user if not already present
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/user/keys"
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    body_format: json
+    body:
+      title: "Host Deployment Key (Automated)"
+      key: "{{ ssh_key_content.content | b64decode | trim }}"
+    status_code: [201, 400]
+  when: "ssh_key_content.content | b64decode | trim not in (existing_keys.json | map(attribute='key') | list)"

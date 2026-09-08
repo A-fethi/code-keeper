@@ -43,3 +43,38 @@
     name: gitlab-runner
     state: started
     enabled: true
+
+- name: Check if runner is already registered locally
+  ansible.builtin.command:
+    cmd: gitlab-runner list
+  register: runner_list
+  changed_when: false
+
+- name: Request Runner Authentication Token from GitLab API
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/user/runners"
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    body_format: json
+    body:
+      runner_type: "instance_type"
+      description: "code-keeper-docker-runner"
+      tag_list: ["docker"]
+      run_untagged: true
+    status_code: 201
+  register: runner_api_response
+  when: "'code-keeper-docker-runner' not in runner_list.stderr and 'code-keeper-docker-runner' not in runner_list.stdout"
+
+- name: Register GitLab Runner daemon with Docker executor
+  ansible.builtin.command:
+    cmd: >
+      gitlab-runner register
+      --non-interactive
+      --url "{{ gitlab_external_url }}"
+      --token "{{ runner_api_response.json.token }}"
+      --executor "docker"
+      --docker-image "docker:24.0.5"
+      --docker-privileged="true"
+      --description "code-keeper-docker-runner"
+  when: "'code-keeper-docker-runner' not in runner_list.stderr and 'code-keeper-docker-runner' not in runner_list.stdout"
