@@ -12,6 +12,13 @@ stages:
 
 before_script:
   - terraform --version
+  - export AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+  - |
+    if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+      echo "ERROR: AWS credentials (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) are missing in CI!"
+      echo "Ensure group variables exist under 'code-keeper' and are marked 'protected: false' if running on an unprotected branch."
+      exit 1
+    fi
   - terraform init
 
 # 1. INIT STAGE
