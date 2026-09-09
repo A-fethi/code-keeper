@@ -56,6 +56,7 @@ apply_staging:
     - job: terraform_plan
       artifacts: true
   script:
+    - terraform workspace select -or-create staging
     - echo "Applying infrastructure changes to STAGING environment..."
     - terraform apply -auto-approve tfplan
     - echo "Staging apply completed successfully."
@@ -82,6 +83,7 @@ apply_production:
   needs:
     - job: production_approval
   script:
+    - terraform workspace select -or-create production
     - echo "Applying infrastructure changes to PRODUCTION environment..."
     - terraform apply -auto-approve
     - echo "Production apply completed successfully."
