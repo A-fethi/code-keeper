@@ -74,6 +74,8 @@ staging_deploy:
   image: alpine:latest
   environment:
     name: staging
+  before_script:
+    - apk add --no-cache aws-cli
   script:
     - echo "Deploying api-gateway to Staging environment..."
     - aws ecs update-service --cluster cloud-design-cluster --service cloud-design-gateway-service --force-new-deployment --region $AWS_DEFAULT_REGION
