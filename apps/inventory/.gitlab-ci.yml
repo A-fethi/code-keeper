@@ -42,23 +42,30 @@ docker_build:
   image: docker:24.0.5
   retry: 2
   services:
-    - docker:24.0.5-dind
+    - name: docker:24.0.5-dind
+      command: ["--mtu=1450"]
   variables:
     DOCKER_TLS_CERTDIR: ""
   before_script:
     - apk add --no-cache aws-cli
     - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+    - REPO_NAME="cloud-design/inventory-app"
     - IMAGE_URL="$ECR_URL/cloud-design/inventory-app"
     - |
       if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+        echo "Ensuring ECR repository '$REPO_NAME' exists..."
+        aws ecr describe-repositories --repository-names "$REPO_NAME" --region ${AWS_DEFAULT_REGION:-us-east-1} || \
+        aws ecr create-repository --repository-name "$REPO_NAME" --region ${AWS_DEFAULT_REGION:-us-east-1}
+        
         echo "Logging into AWS ECR at $ECR_URL..."
-        aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URL
+        aws ecr get-login-password --region ${AWS_DEFAULT_REGION:-us-east-1} | docker login --username AWS --password-stdin $ECR_URL
       else
         echo "WARNING: No AWS credentials found in environment. Build will continue locally."
       fi
   script:
-    - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
-    - IMAGE_URL="$ECR_URL/cloud-design/inventory-app"
+    - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
+    - REPO_NAME="cloud-design/inventory-app"
+    - IMAGE_URL="$ECR_URL/$REPO_NAME"
     - echo "Building Docker image for inventory ($IMAGE_URL)..."
     - docker build -t $IMAGE_URL:latest -t $IMAGE_URL:$CI_COMMIT_SHORT_SHA .
     - |
@@ -72,7 +79,9 @@ docker_build:
 # 5. DEPLOY TO STAGING
 staging_deploy:
   stage: deploy_staging
-  image: amazon/aws-cli:latest
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
   environment:
     name: staging
   script:
@@ -97,7 +106,9 @@ production_approval:
 # 7. DEPLOY TO PRODUCTION
 production_deploy:
   stage: deploy_production
-  image: amazon/aws-cli:latest
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
   environment:
     name: production
   script:
