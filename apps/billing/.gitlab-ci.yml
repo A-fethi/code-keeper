@@ -40,6 +40,7 @@ security_scan:
 docker_build:
   stage: containerize
   image: docker:24.0.5
+  retry: 2
   services:
     - docker:24.0.5-dind
   variables:
@@ -71,14 +72,12 @@ docker_build:
 # 5. DEPLOY TO STAGING
 staging_deploy:
   stage: deploy_staging
-  image: alpine:latest
+  image: amazon/aws-cli:latest
   environment:
     name: staging
-  before_script:
-    - apk add --no-cache aws-cli
   script:
     - echo "Deploying billing to Staging environment..."
-    - aws ecs update-service --cluster cloud-design-cluster --service cloud-design-billing-app-service --force-new-deployment --region $AWS_DEFAULT_REGION
+    - aws ecs update-service --cluster cloud-design-cluster --service cloud-design-billing-app-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
     - echo "Deployment triggered successfully."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -98,11 +97,12 @@ production_approval:
 # 7. DEPLOY TO PRODUCTION
 production_deploy:
   stage: deploy_production
-  image: alpine:latest
+  image: amazon/aws-cli:latest
   environment:
     name: production
   script:
     - echo "Deploying billing to Production environment..."
+    - aws ecs update-service --cluster cloud-design-cluster --service cloud-design-billing-app-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
     - echo "Zero-downtime rolling update completed successfully."
   needs:
     - production_approval
