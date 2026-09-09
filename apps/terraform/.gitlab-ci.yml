@@ -5,7 +5,7 @@ image:
 stages:
   - init
   - validate
-  - plan
+  - plan_staging
   - apply_staging
   - approval
   - apply_production
