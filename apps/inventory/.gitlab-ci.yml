@@ -46,7 +46,7 @@ container_scan:
     entrypoint: [""]
   script:
     - echo "Scanning repository for container & misconfiguration vulnerabilities..."
-    - trivy fs --exit-code 0 --severity HIGH,CRITICAL.
+    - trivy fs --exit-code 0 --severity HIGH,CRITICAL .
 
 # 5. CONTAINERIZE STAGE
 docker_build:
