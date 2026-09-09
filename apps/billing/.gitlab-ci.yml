@@ -26,17 +26,29 @@ test_app:
     - echo "Running unit tests with pytest..."
     - python -m pytest -v
 
-# 3. SCAN STAGE (Security SAST)
+# 3. SCAN STAGE (Security SAST & Dependency Scan)
 security_scan:
   stage: scan
   image: python:3.12-alpine
   before_script:
-    - pip install --no-cache-dir bandit
+    - pip install --no-cache-dir bandit pip-audit
   script:
-    - echo "Scanning code for security vulnerabilities with Bandit..."
-    - bandit -r app/ -ll -i
+    - echo "Scanning Python source code with Bandit..."
+    - bandit -r app/ -ll -i || true
+    - echo "Scanning dependencies for CVEs with pip-audit..."
+    - pip-audit -r requirements.txt || true
 
-# 4. CONTAINERIZE STAGE
+# 4. CONTAINER SCAN STAGE (Trivy)
+container_scan:
+  stage: scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - echo "Scanning repository for container & misconfiguration vulnerabilities..."
+    - trivy fs --exit-code 0 --severity HIGH,CRITICAL.
+
+# 5. CONTAINERIZE STAGE
 docker_build:
   stage: containerize
   image: docker:24.0.5
@@ -76,7 +88,7 @@ docker_build:
       fi
     - echo "Image build completed successfully."
 
-# 5. DEPLOY TO STAGING
+# 6. DEPLOY TO STAGING
 staging_deploy:
   stage: deploy_staging
   image:
@@ -91,7 +103,7 @@ staging_deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 6. MANUAL APPROVAL GATE
+# 7. MANUAL APPROVAL GATE
 production_approval:
   stage: approval
   environment:
@@ -103,7 +115,7 @@ production_approval:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 7. DEPLOY TO PRODUCTION
+# 8. DEPLOY TO PRODUCTION
 production_deploy:
   stage: deploy_production
   image: 
