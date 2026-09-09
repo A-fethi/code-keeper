@@ -37,8 +37,8 @@ terraform_validate:
     - echo "Validation passed."
 
 # 3. PLAN STAGE
-terraform_plan:
-  stage: plan
+plan_staging:
+  stage: plan_staging
   script:
     - terraform workspace select -or-create staging
     - terraform plan -out=tfplan-staging
