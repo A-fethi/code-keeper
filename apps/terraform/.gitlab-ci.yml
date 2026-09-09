@@ -80,16 +80,15 @@ apply_production:
   environment:
     name: production
   needs:
-    - job: terraform_plan
-      artifacts: true
-    - production_approval
+    - job: production_approval
   script:
     - echo "Applying infrastructure changes to PRODUCTION environment..."
-    - terraform apply -auto-approve tfplan
+    - terraform apply -auto-approve
     - echo "Production apply completed successfully."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+# 7. CLEANUP / DESTROY STAGE
 destroy_infrastructure:
   stage: destroy
   script:
