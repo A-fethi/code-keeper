@@ -76,7 +76,8 @@ staging_deploy:
     name: staging
   script:
     - echo "Deploying inventory to Staging environment..."
-    - echo "Staging health check ==> OK"
+    - aws ecs update-service --cluster cloud-design-cluster --service cloud-design-inventory-app-service --force-new-deployment --region $AWS_DEFAULT_REGION
+    - echo "Deployment triggered successfully."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
