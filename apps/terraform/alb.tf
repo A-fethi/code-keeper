@@ -26,6 +26,10 @@ resource "aws_lb_target_group" "gateway" {
     interval            = 30
   }
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tags = {
     Name = "cloud-design-gateway-tg"
   }
