@@ -7,6 +7,7 @@ resource "aws_ssm_parameter" "billing_db_password" {
   name  = "/cloud-design/billing-db/password"
   type  = "SecureString"
   value = random_password.billing_db.result
+  overwrite = true
 
   tags = {
     Name = "cloud-design-billing-db-password"

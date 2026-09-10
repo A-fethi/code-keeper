@@ -16,6 +16,7 @@ resource "aws_ssm_parameter" "inventory_db_password" {
   name  = "/cloud-design/inventory-db/password"
   type  = "SecureString"
   value = random_password.inventory_db.result
+  overwrite = true
 
   tags = {
     Name = "cloud-design-inventory-db-password"

@@ -7,6 +7,7 @@ resource "aws_ssm_parameter" "rabbitmq_password" {
   name  = "/cloud-design/rabbitmq/password"
   type  = "SecureString"
   value = random_password.rabbitmq.result
+  overwrite = true
 
   tags = {
     Name = "cloud-design-rabbitmq-password"
