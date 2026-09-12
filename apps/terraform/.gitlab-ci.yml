@@ -93,7 +93,7 @@ apply_production:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 7. CLEANUP / DESTROY STAGE
+# 7. CLEANUP / DESTROY STAGE.
 destroy_infrastructure:
   stage: destroy
   script:
