@@ -68,6 +68,10 @@
   register: token_gen_result
   changed_when: token_gen_result.rc == 0
 
+- name: Ensure gitlab_api_token variable is defined
+  ansible.builtin.set_fact:
+    gitlab_api_token: "{{ gitlab_api_token | default('glpat-codekeepersecrettoken123') }}"
+
 - name: Check if 'code-keeper' Group exists
   ansible.builtin.uri:
     url: "{{ gitlab_external_url }}/api/v4/groups/code-keeper"

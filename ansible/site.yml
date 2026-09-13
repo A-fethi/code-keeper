@@ -1,0 +1,6 @@
+---
+- name: Deploy GitLab Server Infrastructure
+  ansible.builtin.import_playbook: playbooks/deploy_gitlab.yml
+
+- name: Configure GitLab CI/CD Docker Runner
+  ansible.builtin.import_playbook: playbooks/deploy_runner.yml
