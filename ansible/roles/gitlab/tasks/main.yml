@@ -209,3 +209,24 @@
     - { key: 'AWS_SECRET_ACCESS_KEY', value: "{{ aws_secret_access_key }}", masked: true }
     - { key: 'AWS_DEFAULT_REGION', value: "{{ aws_default_region }}", masked: false }
     - { key: 'AWS_ACCOUNT_ID', value: "{{ aws_account_id }}", masked: false }
+  
+- name: Push microservices code to GitLab repositories via Git Subtree
+  ansible.builtin.shell: |
+    REPO_ROOT=$(git rev-parse --show-toplevel)
+    cd "$REPO_ROOT"
+
+    git branch -D temp-{{ item }} 2>/dev/null || true
+
+    # Create subtree split and push to GitLab
+    git subtree split --prefix=apps/{{ item }} -b temp-{{ item }}
+    git push http://root:{{ gitlab_api_token }}@192.168.56.20/code-keeper/{{ item }}.git temp-{{ item }}:main --force
+    git branch -D temp-{{ item }}
+  args:
+    executable: /bin/bash
+  delegate_to: localhost
+  become: false
+  loop:
+    - terraform
+    - api-gateway
+    - inventory
+    - billing
