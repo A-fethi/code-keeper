@@ -15,18 +15,19 @@ stages:
 before_script:
   - terraform --version
   - export AWS_REGION="us-east-1"
-  - terraform init
 
 # 1. INIT
 terraform_init:
   stage: init
   script:
+    - terraform init -reconfigure
     - terraform version
 
 # 2. VALIDATE
 terraform_validate:
   stage: validate
   script:
+    - terraform init -reconfigure
     - terraform validate
 
 # 3. PLAN STAGING
@@ -34,6 +35,7 @@ plan_staging:
   stage: plan_staging
   script:
     - terraform workspace select staging || terraform workspace new staging
+    - terraform init -reconfigure
     - terraform plan -out=tfplan-staging
   artifacts:
     name: "tfplan-staging"
@@ -48,11 +50,14 @@ apply_staging:
   stage: apply_staging
   environment:
     name: staging
+    auto_stop_in: never
+  resource_group: staging
   needs:
     - job: plan_staging
       artifacts: true
   script:
     - terraform workspace select staging || terraform workspace new staging
+    - terraform init -reconfigure
     - echo "Applying infrastructure changes to STAGING..."
     - terraform apply -auto-approve tfplan-staging
   rules:
@@ -86,7 +91,7 @@ apply_production:
 trigger_api_gateway:
   stage: trigger_microservices
   needs:
-    - job: apply_staging
+    - job: apply_production
   trigger:
     project: code-keeper/api-gateway
     branch: main
@@ -96,7 +101,7 @@ trigger_api_gateway:
 trigger_inventory:
   stage: trigger_microservices
   needs:
-    - job: apply_staging
+    - job: apply_production
   trigger:
     project: code-keeper/inventory
     branch: main
@@ -106,7 +111,7 @@ trigger_inventory:
 trigger_billing:
   stage: trigger_microservices
   needs:
-    - job: apply_staging
+    - job: apply_production
   trigger:
     project: code-keeper/billing
     branch: main
@@ -117,7 +122,8 @@ trigger_billing:
 destroy_infrastructure:
   stage: destroy
   script:
-    - terraform workspace select staging
+    - terraform workspace select staging || terraform workspace new staging
+    - terraform init -reconfigure
     - terraform destroy -auto-approve
   when: manual
   rules:
