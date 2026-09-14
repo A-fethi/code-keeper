@@ -107,6 +107,9 @@ staging_deploy:
 # 7. MANUAL APPROVAL GATE
 production_approval:
   stage: approval
+  image:
+    name: alpine:latest
+    entrypoint: [""]
   environment:
     name: production
   script:
