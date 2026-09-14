@@ -22,13 +22,13 @@ before_script:
     fi
   - terraform init
 
-# 1. INIT
+# 1. INIT STAGE
 terraform_init:
   stage: init
   script:
     - terraform version
 
-# 2. VALIDATE
+# 2. VALIDATE STAGE
 terraform_validate:
   stage: validate
   script:
@@ -48,7 +48,7 @@ plan_staging:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 4. APPLY STAGING (Creates active cluster & ECR repos)
+# 4. APPLY STAGING
 apply_staging:
   stage: apply_staging
   environment:
@@ -63,7 +63,7 @@ apply_staging:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 5. PRODUCTION MANUAL APPROVAL
+# 5. PRODUCTION APPROVAL GATE
 production_approval:
   stage: approval
   environment:
@@ -75,7 +75,7 @@ production_approval:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 6. MOCK PRODUCTION APPLY (Prevents extra AWS costs)
+# 6. MOCK PRODUCTION APPLY (Prevents extra AWS Free Tier charges)
 apply_production:
   stage: apply_production
   environment:
@@ -119,7 +119,7 @@ trigger_billing:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 8. TEARDOWN (To destroy all resources when lab testing is done)
+# 8. TEARDOWN
 destroy_infrastructure:
   stage: destroy
   script:
