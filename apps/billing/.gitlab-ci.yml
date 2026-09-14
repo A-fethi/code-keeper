@@ -51,13 +51,14 @@ container_scan:
 # 5. CONTAINERIZE STAGE
 docker_build:
   stage: containerize
-  image: docker:24.0.5
+  image: docker:latest
   retry: 2
   services:
-    - name: docker:24.0.5-dind
+    - name: docker:dind
       command: ["--mtu=1450"]
   variables:
     DOCKER_TLS_CERTDIR: ""
+    DOCKER_API_VERSION: "1.44"
   before_script:
     - apk add --no-cache aws-cli
     - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
@@ -78,7 +79,7 @@ docker_build:
     - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
     - REPO_NAME="cloud-design/billing-app"
     - IMAGE_URL="$ECR_URL/$REPO_NAME"
-    - echo "Building Docker image for inventory ($IMAGE_URL)..."
+    - echo "Building Docker image for billing ($IMAGE_URL)..."
     - docker build -t $IMAGE_URL:latest -t $IMAGE_URL:$CI_COMMIT_SHORT_SHA .
     - |
       if [ -n "$AWS_ACCESS_KEY_ID" ]; then

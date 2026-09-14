@@ -78,7 +78,7 @@ docker_build:
     - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
     - REPO_NAME="cloud-design/api-gateway-app"
     - IMAGE_URL="$ECR_URL/$REPO_NAME"
-    - echo "Building Docker image for inventory ($IMAGE_URL)..."
+    - echo "Building Docker image for api-gateway ($IMAGE_URL)..."
     - docker build -t $IMAGE_URL:latest -t $IMAGE_URL:$CI_COMMIT_SHORT_SHA .
     - |
       if [ -n "$AWS_ACCESS_KEY_ID" ]; then
