@@ -1,4 +1,5 @@
 # Terraform
+/terraform1/
 **/.terraform/*
 *.tfstate
 *.tfstate.*

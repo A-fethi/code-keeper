@@ -1,0 +1,140 @@
+{
+    "Versions": [
+        {
+            "ETag": "\"0ca81aa6e4bc7d5f96b9eeebadffc78c\"",
+            "ChecksumAlgorithm": [
+                "SHA256"
+            ],
+            "ChecksumType": "FULL_OBJECT",
+            "Size": 137390,
+            "StorageClass": "STANDARD",
+            "Key": "terraform.tfstate",
+            "VersionId": "0lKPzB5fEZhO1A8DfyYURSfmb6C32db2",
+            "IsLatest": true,
+            "LastModified": "2026-08-18T14:46:29+00:00",
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            }
+        },
+        {
+            "ETag": "\"6406ae20c7d3fa42612e025b30da7748\"",
+            "ChecksumAlgorithm": [
+                "SHA256"
+            ],
+            "ChecksumType": "FULL_OBJECT",
+            "Size": 138092,
+            "StorageClass": "STANDARD",
+            "Key": "terraform.tfstate",
+            "VersionId": "topCZetiKsorOStNnY22GETu20qpH6sJ",
+            "IsLatest": false,
+            "LastModified": "2026-08-18T14:40:07+00:00",
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            }
+        },
+        {
+            "ETag": "\"2973337de854311442be51aafa406788\"",
+            "ChecksumAlgorithm": [
+                "SHA256"
+            ],
+            "ChecksumType": "FULL_OBJECT",
+            "Size": 246,
+            "StorageClass": "STANDARD",
+            "Key": "terraform.tfstate.tflock",
+            "VersionId": "OswgCYHwCeu2V.LO62ykpJohEI8HbnIu",
+            "IsLatest": false,
+            "LastModified": "2026-08-18T14:46:25+00:00",
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            }
+        },
+        {
+            "ETag": "\"9d183c93718e72e23740bfa559e12c3a\"",
+            "ChecksumAlgorithm": [
+                "SHA256"
+            ],
+            "ChecksumType": "FULL_OBJECT",
+            "Size": 245,
+            "StorageClass": "STANDARD",
+            "Key": "terraform.tfstate.tflock",
+            "VersionId": "ClGR3lmqomUjTSXC2897biupB.PNQBFm",
+            "IsLatest": false,
+            "LastModified": "2026-08-18T14:46:13+00:00",
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            }
+        },
+        {
+            "ETag": "\"3f6c544af412f4f60cf3e8fb468e079e\"",
+            "ChecksumAlgorithm": [
+                "SHA256"
+            ],
+            "ChecksumType": "FULL_OBJECT",
+            "Size": 245,
+            "StorageClass": "STANDARD",
+            "Key": "terraform.tfstate.tflock",
+            "VersionId": "wXRVbXEYX.39d2_SQQv_OnW5DDPi6bhS",
+            "IsLatest": false,
+            "LastModified": "2026-08-18T14:42:12+00:00",
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            }
+        },
+        {
+            "ETag": "\"26cb76d48fd9c2f1ac7593d4f843af13\"",
+            "ChecksumAlgorithm": [
+                "SHA256"
+            ],
+            "ChecksumType": "FULL_OBJECT",
+            "Size": 255,
+            "StorageClass": "STANDARD",
+            "Key": "terraform.tfstate.tflock",
+            "VersionId": "IGeIRufq3Uri2lNpxG_0mFQ73wagJTz4",
+            "IsLatest": false,
+            "LastModified": "2026-08-18T14:40:05+00:00",
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            }
+        }
+    ],
+    "DeleteMarkers": [
+        {
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            },
+            "Key": "terraform.tfstate.tflock",
+            "VersionId": "6mQmBtVQ2suZqcjuVcJ9.NsxtB9k8NWE",
+            "IsLatest": true,
+            "LastModified": "2026-08-18T14:46:30+00:00"
+        },
+        {
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            },
+            "Key": "terraform.tfstate.tflock",
+            "VersionId": "4MX8.az9Ly.dUFn2o.G_cwybF5cvSjBW",
+            "IsLatest": false,
+            "LastModified": "2026-08-18T14:46:17+00:00"
+        },
+        {
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            },
+            "Key": "terraform.tfstate.tflock",
+            "VersionId": "XZm0BgnS_mDuZPTN7GKUIvEl.1.Bp8Yp",
+            "IsLatest": false,
+            "LastModified": "2026-08-18T14:42:16+00:00"
+        },
+        {
+            "Owner": {
+                "ID": "4f452424a9af1746a4bbbeed3e2de57a7d34e023792f6ea827c143e07c0800e5"
+            },
+            "Key": "terraform.tfstate.tflock",
+            "VersionId": "61_.VLDy052TjmGZIafLkCRV19P5Fn46",
+            "IsLatest": false,
+            "LastModified": "2026-08-18T14:40:07+00:00"
+        }
+    ],
+    "RequestCharged": null,
+    "Prefix": "terraform.tfstate"
+}

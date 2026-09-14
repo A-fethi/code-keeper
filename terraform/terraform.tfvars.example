@@ -1,0 +1,125 @@
+aws_region   = "eu-west-3"
+project_name = "XXXXXX-XXXXXX"
+environment  = "dev"
+
+apigateway_port    = 0000
+inventory_app_port = 0000
+billing_app_port   = 0000
+rabbitmq_port      = 0000
+inventory_db_port  = 0000
+billing_db_port    = 0000
+
+rabbitmq_queue    = "XXXXXX"
+rabbitmq_user     = "XXXXXX"
+rabbitmq_password = "XXXXXX"
+
+inventory_db_user     = "XXXXXX"
+inventory_db_name     = "XXXXXX"
+inventory_db_password = "XXXXXX"
+
+billing_db_user     = "XXXXXX"
+billing_db_name     = "XXXXXX"
+billing_db_password = "XXXXXX"
+
+dockerhub_username = "XXXXXX"
+dockerhub_password = "XXXXXX"
+dockerhub_pull     = true
+dockerhub_push     = false
+
+billing_db_image   = "XXXXXX/XXXXXX-database:latest"
+inventory_db_image = "XXXXXX/XXXXXX-database:latest"
+rabbitmq_image     = "XXXXXX/XXXXXX:latest"
+
+
+services = {
+  gateway = {
+    type           = "application"
+    image          = XXX
+    container_port = XXX
+    cpu            = XXX
+    memory         = XXX
+    desired_count  = XXX
+
+    environment = {
+      INVENTORY_SERVICE_URL = "http://XXXXXXXXXXX:XXXX"
+      BILLING_SERVICE_URL   = "http://XXXXXXXXXXX:XXXX"
+    }
+  }
+
+  inventory = {
+    type           = "application"
+    image          = "${var.dockerhub_username}/inventory-app:latest"
+    container_port = var.inventory_app_port
+    cpu            = 256
+    memory         = 512
+    desired_count  = 1
+
+    environment = {
+      DATABASE_HOST = "inventory-db.internal"
+      DATABASE_PORT = "5432"
+      RABBITMQ_HOST = "rabbitmq.internal"
+      RABBITMQ_PORT = "5672"
+    }
+  }
+
+  billing = {
+    type           = "application"
+    image          = "${var.dockerhub_username}/billing-app:latest"
+    container_port = var.billing_app_port
+    cpu            = 256
+    memory         = 512
+    desired_count  = 1
+
+    environment = {
+      DATABASE_HOST = "billing-db.internal"
+      DATABASE_PORT = "5432"
+      RABBITMQ_HOST = "rabbitmq.internal"
+      RABBITMQ_PORT = "5672"
+    }
+  }
+
+  rabbitmq = {
+    type           = "message-broker"
+    image          = "${var.dockerhub_username}/rabbitmq:latest"
+    container_port = var.rabbitmq_port
+    cpu            = 256
+    memory         = 512
+    desired_count  = 1
+
+    environment = {
+      RABBITMQ_DEFAULT_USER = var.rabbitmq_user
+    }
+  }
+
+  inventory-db = {
+    type           = "database"
+    image          = "${var.dockerhub_username}/inventory-database:latest"
+    container_port = var.inventory_db_port
+    cpu            = 256
+    memory         = 512
+    desired_count  = 1
+
+    environment = {
+      POSTGRES_USER     = var.inventory_db_user
+      POSTGRES_PASSWORD = var.inventory_db_password
+      POSTGRES_DB       = var.inventory_db_name
+    }
+  }
+
+  billing-db = {
+    type           = "database"
+    image            = "${var.dockerhub_username}/billing-database:latest"
+    container_port    = var.billing_db_port
+    cpu               = 256
+    memory            = 512
+    desired_count     = 1
+
+    environment = {
+      POSTGRES_USER     = var.billing_db_user
+      POSTGRES_PASSWORD = var.billing_db_password
+      POSTGRES_DB       = var.billing_db_name
+    }
+  }
+}
+
+certificate_arn = "arn:aws:acm:xx-xxxx-xx:XXXXXXXXXXXXX:certificate/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
