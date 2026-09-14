@@ -14,21 +14,16 @@ stages:
 
 before_script:
   - terraform --version
-  - export AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
-  - |
-    if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-      echo "ERROR: AWS credentials missing!"
-      exit 1
-    fi
+  - export AWS_REGION="us-east-1"
   - terraform init
 
-# 1. INIT STAGE
+# 1. INIT
 terraform_init:
   stage: init
   script:
     - terraform version
 
-# 2. VALIDATE STAGE
+# 2. VALIDATE
 terraform_validate:
   stage: validate
   script:
@@ -41,7 +36,7 @@ plan_staging:
     - terraform workspace select staging || terraform workspace new staging
     - terraform plan -out=tfplan-staging
   artifacts:
-    name: "tfplan-staging-$CI_COMMIT_SHORT_SHA"
+    name: "tfplan-staging"
     paths:
       - tfplan-staging
     expire_in: 1 hour
@@ -69,13 +64,13 @@ production_approval:
   environment:
     name: production
   script:
-    - echo "Production release approved by $GITLAB_USER_LOGIN."
+    - echo "Production release approved."
   when: manual
   allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 6. MOCK PRODUCTION APPLY (Prevents extra AWS Free Tier charges)
+# 6. MOCK PRODUCTION APPLY
 apply_production:
   stage: apply_production
   environment:
@@ -84,7 +79,6 @@ apply_production:
     - job: production_approval
   script:
     - echo "PROD MODE: Reusing Staging cluster to avoid AWS Free Tier overages."
-    - echo "Skipping redundant resource provisioning."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
