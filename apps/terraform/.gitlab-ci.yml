@@ -78,7 +78,7 @@ apply_production:
   needs:
     - job: production_approval
   script:
-    - echo "PROD MODE: Reusing Staging cluster to avoid AWS Free Tier overages."
+    - 'echo "PROD MODE: Reusing Staging cluster to avoid AWS Free Tier overages."'
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
