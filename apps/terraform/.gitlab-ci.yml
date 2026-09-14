@@ -9,6 +9,7 @@ stages:
   - apply_staging
   - approval
   - apply_production
+  - trigger_microservices
   - destroy
 
 before_script:
@@ -16,31 +17,28 @@ before_script:
   - export AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
   - |
     if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-      echo "ERROR: AWS credentials (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) are missing in CI!"
-      echo "Ensure group variables exist under 'code-keeper' and are marked 'protected: false' if running on an unprotected branch."
+      echo "ERROR: AWS credentials missing!"
       exit 1
     fi
   - terraform init
 
-# 1. INIT STAGE
+# 1. INIT
 terraform_init:
   stage: init
   script:
-    - echo "Terraform initialization successful."
     - terraform version
 
-# 2. VALIDATE STAGE
+# 2. VALIDATE
 terraform_validate:
   stage: validate
   script:
     - terraform validate
-    - echo "Validation passed."
 
-# 3. PLAN STAGE
+# 3. PLAN STAGING
 plan_staging:
   stage: plan_staging
   script:
-    - terraform workspace select -or-create staging
+    - terraform workspace select staging || terraform workspace new staging
     - terraform plan -out=tfplan-staging
   artifacts:
     name: "tfplan-staging-$CI_COMMIT_SHORT_SHA"
@@ -50,7 +48,7 @@ plan_staging:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 4. APPLY TO STAGING
+# 4. APPLY STAGING (Creates active cluster & ECR repos)
 apply_staging:
   stage: apply_staging
   environment:
@@ -59,26 +57,25 @@ apply_staging:
     - job: plan_staging
       artifacts: true
   script:
-    - terraform workspace select -or-create staging
-    - echo "Applying infrastructure changes to STAGING environment..."
+    - terraform workspace select staging || terraform workspace new staging
+    - echo "Applying infrastructure changes to STAGING..."
     - terraform apply -auto-approve tfplan-staging
-    - echo "Staging apply completed successfully."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 5. MANUAL APPROVAL GATE
+# 5. PRODUCTION MANUAL APPROVAL
 production_approval:
   stage: approval
   environment:
     name: production
   script:
-    - echo "Production deployment approved by $GITLAB_USER_LOGIN at $(date)."
+    - echo "Production release approved by $GITLAB_USER_LOGIN."
   when: manual
   allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 6. APPLY TO PRODUCTION
+# 6. MOCK PRODUCTION APPLY (Prevents extra AWS costs)
 apply_production:
   stage: apply_production
   environment:
@@ -86,17 +83,47 @@ apply_production:
   needs:
     - job: production_approval
   script:
-    - terraform workspace select -or-create production
-    - echo "Applying infrastructure changes to PRODUCTION environment..."
-    - terraform apply -auto-approve
-    - echo "Production apply completed successfully."
+    - echo "PROD MODE: Reusing Staging cluster to avoid AWS Free Tier overages."
+    - echo "Skipping redundant resource provisioning."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 7. CLEANUP / DESTROY STAGE.
+# 7. TRIGGER DOWNSTREAM MICROSERVICES
+trigger_api_gateway:
+  stage: trigger_microservices
+  needs:
+    - job: apply_staging
+  trigger:
+    project: code-keeper/api-gateway
+    branch: main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+trigger_inventory:
+  stage: trigger_microservices
+  needs:
+    - job: apply_staging
+  trigger:
+    project: code-keeper/inventory
+    branch: main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+trigger_billing:
+  stage: trigger_microservices
+  needs:
+    - job: apply_staging
+  trigger:
+    project: code-keeper/billing
+    branch: main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# 8. TEARDOWN (To destroy all resources when lab testing is done)
 destroy_infrastructure:
   stage: destroy
   script:
+    - terraform workspace select staging
     - terraform destroy -auto-approve
   when: manual
   rules:
