@@ -40,8 +40,7 @@ plan_staging:
     - ./scripts/generate-imports.sh
     - terraform plan -var="import_existing_resources=true" -out=tfplan-staging
   artifacts:
-    name:
-      - "tfplan-staging"
+    name: "tfplan-staging"
     paths:
       - terraform/tfplan-staging
       - terraform/imports.tf 
