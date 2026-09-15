@@ -34,8 +34,8 @@ terraform_validate:
 plan_staging:
   stage: plan_staging
   script:
-    - terraform workspace select staging || terraform workspace new staging
     - terraform init -reconfigure
+    - terraform workspace select staging || terraform workspace new staging
     - terraform plan -out=tfplan-staging
   artifacts:
     name: "tfplan-staging"
@@ -56,8 +56,8 @@ apply_staging:
     - job: plan_staging
       artifacts: true
   script:
-    - terraform workspace select staging || terraform workspace new staging
     - terraform init -reconfigure
+    - terraform workspace select staging || terraform workspace new staging
     - echo "Applying infrastructure changes to STAGING..."
     - terraform apply -auto-approve tfplan-staging
   rules:
@@ -122,8 +122,8 @@ trigger_billing:
 destroy_infrastructure:
   stage: destroy
   script:
-    - terraform workspace select staging || terraform workspace new staging
     - terraform init -reconfigure
+    - terraform workspace select staging || terraform workspace new staging
     - terraform destroy -auto-approve
   when: manual
   rules:
