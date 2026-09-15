@@ -9,7 +9,7 @@ GITLAB_SSH_PORT="${GITLAB_SSH_PORT:-22}"
 echo "==> 1. Pushing monorepo to GitHub..."
 git add .
 git commit -m "$MSG" || echo "No new changes to commit in root."
-git push origin main
+git push iichi
 
 echo "==> 2. Syncing microservices to GitLab via SSH..."
 
