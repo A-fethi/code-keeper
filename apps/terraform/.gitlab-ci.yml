@@ -20,7 +20,8 @@ before_script:
       echo "Ensure group variables exist under 'code-keeper' and are marked 'protected: false' if running on an unprotected branch."
       exit 1
     fi
-  - terraform init
+  - printf '%s\n' "$TFVARS_FILE" > terraform.tfvars
+  - terraform init 
 
 # 1. INIT STAGE
 terraform_init:
