@@ -1,5 +1,5 @@
 image:
-  name: hashicorp/terraform:1.6
+  name: hashicorp/terraform:1.16
   entrypoint: [""]
 
 stages:
@@ -101,3 +101,5 @@ destroy_infrastructure:
   when: manual
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+# test 

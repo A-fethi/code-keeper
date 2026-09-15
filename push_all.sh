@@ -37,8 +37,12 @@ sync_gitlab_app() {
 }
 
 sync_gitlab_app "terraform"
+echo "-----------------------------"
 sync_gitlab_app "api-gateway"
+echo "-----------------------------"
 sync_gitlab_app "inventory"
+echo "-----------------------------"
 sync_gitlab_app "billing"
+echo "-----------------------------"
 
 echo "==> All pushed successfully via SSH to GitLab!"
