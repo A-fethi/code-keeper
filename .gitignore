@@ -4,6 +4,11 @@
 *.tfstate.*
 *.tfvars
 .terraform.lock.hcl
+apps/terraform/imports.tf
+apps/terraform/tdestroy-staging
+apps/terraform/tfplan-staging
+apps/terraform/test.sh
+
 
 # Docker
 *.env
