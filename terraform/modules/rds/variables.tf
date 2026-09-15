@@ -8,6 +8,6 @@ variable "private_subnet_cidrs" {
   description = "A list of private subnet CIDRs for the RDS instance"
 }
 variable "aws_security_group" {
-  type = string
+  type        = string
   description = "The ID of the security group to associate with the RDS instance"
 }

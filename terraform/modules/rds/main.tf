@@ -2,17 +2,20 @@
 
 # Create a private DNS namespace for service discovery
 # resource "aws_service_discovery_private_dns_namespace" "main" {
-  # name        = "internal"
-  # description = "Private DNS namespace for ECS services"
-  # vpc         = var.vpc_id
+# name        = "internal"
+# description = "Private DNS namespace for ECS services"
+# vpc         = var.vpc_id
 # }
 # 
 
+data "aws_kms_alias" "ssm" {
+  name = "alias/aws/ssm"
+}
 
 # inventory-db
 
 resource "aws_db_subnet_group" "main" {
-  name       = "cloud-design-db-subnet-group"
+  name = "cloud-design-db-subnet-group"
   # subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
   subnet_ids = var.private_subnet_cidrs
 
@@ -27,10 +30,10 @@ resource "random_password" "inventory_db" {
 }
 
 resource "aws_ssm_parameter" "inventory_db_password" {
-  name  = "/cloud-design/inventory-db/password"
-  type  = "SecureString"
-  value = random_password.inventory_db.result
-
+  name   = "/cloud-design/inventory-db/password"
+  type   = "SecureString"
+  value  = random_password.inventory_db.result
+  key_id = data.aws_kms_alias.ssm.arn
   tags = {
     Name = "cloud-design-inventory-db-password"
   }
@@ -45,8 +48,8 @@ resource "aws_db_instance" "inventory_db" {
   allocated_storage = 20
   storage_type      = "gp3"
 
-  db_name  = "inventory"
-  username = "inventoryadmin"
+  db_name  = "inventory_db"
+  username = local.inventory_username
   password = random_password.inventory_db.result
 
   db_subnet_group_name   = aws_db_subnet_group.main.name
@@ -70,9 +73,10 @@ resource "random_password" "billing_db" {
 }
 
 resource "aws_ssm_parameter" "billing_db_password" {
-  name  = "/cloud-design/billing-db/password"
-  type  = "SecureString"
-  value = random_password.billing_db.result
+  name   = "/cloud-design/billing-db/password"
+  type   = "SecureString"
+  value  = random_password.billing_db.result
+  key_id = data.aws_kms_alias.ssm.arn
 
   tags = {
     Name = "cloud-design-billing-db-password"
@@ -88,8 +92,8 @@ resource "aws_db_instance" "billing_db" {
   allocated_storage = 20
   storage_type      = "gp3"
 
-  db_name  = "billing"
-  username = "billingadmin"
+  db_name  = "billing_db"
+  username = local.billing_username
   password = random_password.billing_db.result
 
   db_subnet_group_name   = aws_db_subnet_group.main.name

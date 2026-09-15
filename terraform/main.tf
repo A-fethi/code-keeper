@@ -62,15 +62,20 @@ module "iam" {
   dockerhub_username = var.dockerhub_username
   dockerhub_password = var.dockerhub_password
 
+  inventory_db_password_arn = module.rds.aws_ssm_parameter_inventory_db_password_arn
+  billing_db_password_arn   = module.rds.aws_ssm_parameter_billing_db_password_arn
+
   application_secrets = {
-    rabbitmq_user         = var.rabbitmq_user
-    rabbitmq_password     = var.rabbitmq_password
+    rabbitmq_user     = var.rabbitmq_user
+    rabbitmq_password = var.rabbitmq_password
+    // inventory creds
     inventory_db_user     = var.inventory_db_user
-    inventory_db_password = var.inventory_db_password
+    inventory_db_password = module.rds.inventory_db_password
     inventory_db_name     = var.inventory_db_name
-    billing_db_user       = var.billing_db_user
-    billing_db_password   = var.billing_db_password
-    billing_db_name       = var.billing_db_name
+    // billing creds
+    billing_db_user     = module.rds.billing_db_user
+    billing_db_password = module.rds.billing_db_password
+    billing_db_name     = var.billing_db_name
   }
 }
 
@@ -91,7 +96,8 @@ module "ecs" {
   dockerhub_credentials_arn = module.iam.dockerhub_secret_arn
   services = {
     for name, service in var.services : name => merge(service, {
-      secrets = merge(service.secrets, lookup(local.service_secrets, name, {}))
+      environment = merge(service.environment, lookup(local.service_environment, name, {}))
+      secrets     = merge(service.secrets, lookup(local.service_secrets, name, {}))
     })
   }
 }
@@ -101,7 +107,7 @@ module "rds" {
 
   vpc_id               = module.networking.vpc_id
   private_subnet_cidrs = module.networking.private_subnet_ids
-  aws_security_group    = module.security.db_security_group_id
+  aws_security_group   = module.security.db_security_group_id
 
 }
 

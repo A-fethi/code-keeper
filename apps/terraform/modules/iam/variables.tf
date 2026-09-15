@@ -26,3 +26,18 @@ variable "application_secrets" {
   sensitive   = true
 }
 
+variable "inventory_db_password_arn" {
+  description = "The ARN of the SSM parameter for the inventory database password"
+  type        = string
+}
+
+variable "billing_db_password_arn" {
+  description = "The ARN of the SSM parameter for the billing database password"
+  type        = string 
+}
+
+# variable "aws_security_group" {
+#   description = "The security group ID for the RDS instances"
+#   type        = string
+  
+# }
