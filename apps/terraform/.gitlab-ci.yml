@@ -42,12 +42,8 @@ plan_staging:
   stage: plan_staging
   script:
     - terraform workspace select -or-create staging
-    - terraform import \
-      'module.iam.aws_secretsmanager_secret.dockerhub[0]' \
-      'cloud-design-dev/dockerhub' || true
-    - terraform plan \
-      -replace='module.ecs.aws_service_discovery_private_dns_namespace.main' \
-      -out=tfplan-staging
+    
+    - terraform plan -out=tfplan-staging
   artifacts:
     name: "tfplan-staging-$CI_COMMIT_SHORT_SHA"
     paths:
@@ -119,3 +115,4 @@ destroy_manual:
   when: manual
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
