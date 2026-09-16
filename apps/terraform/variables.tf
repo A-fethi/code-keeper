@@ -192,6 +192,7 @@ variable "dockerhub_password" {
   description = "Docker Hub password for authenticated pulls. Leave empty to use unauthenticated pulls."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 # certificate ARN for HTTPS listener

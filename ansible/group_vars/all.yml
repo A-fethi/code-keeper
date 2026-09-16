@@ -6,3 +6,5 @@ host_ssh_public_key_path: "~/.ssh/id_ed25519.pub"
 aws_default_region: "eu-west-3"
 
 certificate_arn: "arn:aws:acm:eu-west-3:XXXXXXXXXXXXXXXX:certificate/ee92b69d-48ef-4191-b683-6b53b5c46995"
+
+dockerhub_password: ""

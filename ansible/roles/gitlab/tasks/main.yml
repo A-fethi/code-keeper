@@ -252,9 +252,23 @@
     - { key: 'TF_VAR_rabbitmq_port', value: '5672', masked: false }
     - { key: 'TF_VAR_inventory_db_port', value: '5432', masked: false }
     - { key: 'TF_VAR_billing_db_port', value: '5433', masked: false }
-    - { key: 'TF_VAR_dockerhub_password', value: "{{ dockerhub_password }}", masked: true }
     - { key: 'TF_VAR_certificate_arn', value: "{{ certificate_arn }}", masked: false }
     - { key: 'TF_VAR_backend_server_name', value: 'api.code-keeper.local', masked: false }
+
+- name: Define Docker Hub password for Terraform when configured
+  ansible.builtin.uri:
+    url: "{{ gitlab_external_url }}/api/v4/groups/code-keeper/variables"
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+    body_format: json
+    body:
+      key: "TF_VAR_dockerhub_password"
+      value: "{{ dockerhub_password }}"
+      protected: false
+      masked: true
+    status_code: [201, 400]
+  when: dockerhub_password | default('') | length > 0
 
 - name: Push microservices code to GitLab repositories via Git Subtree
   ansible.builtin.shell: |
