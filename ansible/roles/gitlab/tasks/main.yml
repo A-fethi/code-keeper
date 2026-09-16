@@ -244,7 +244,7 @@
     status_code: [201, 400]
   loop:
     - key: 'TF_VAR_services'
-      value: '{ "gateway": { "type": "backend", "image": "madagha/api-gateway:latest", "container_port": 8080, "cpu": 256, "memory": 512, "desired_count": 1 }, "inventory": { "type": "backend", "image": "madagha/inventory:latest", "container_port": 8081, "cpu": 256, "memory": 512, "desired_count": 1 }, "billing": { "type": "backend", "image": "madagha/billing:latest", "container_port": 8082, "cpu": 256, "memory": 512, "desired_count": 1 } }'
+      value: '{ gateway = { type = "backend", image = "madagha/api-gateway:latest", container_port = 8080, cpu = 256, memory = 512, desired_count = 1 }, inventory = { type = "backend", image = "madagha/inventory:latest", container_port = 8081, cpu = 256, memory = 512, desired_count = 1 }, billing = { type = "backend", image = "madagha/billing:latest", container_port = 8082, cpu = 256, memory = 512, desired_count = 1 } }'
       masked: false
     - { key: 'TF_VAR_apigateway_port', value: '8080', masked: false }
     - { key: 'TF_VAR_inventory_app_port', value: '8081', masked: false }
