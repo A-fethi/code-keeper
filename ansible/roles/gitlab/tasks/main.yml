@@ -209,6 +209,52 @@
     - { key: 'AWS_SECRET_ACCESS_KEY', value: "{{ aws_secret_access_key }}", masked: true }
     - { key: 'AWS_DEFAULT_REGION', value: "{{ aws_default_region }}", masked: false }
     - { key: 'AWS_ACCOUNT_ID', value: "{{ aws_account_id }}", masked: false }
+
+# - name: Delete stale TF_VAR CI/CD variables from Group
+#   ansible.builtin.uri:
+#     url: "{{ gitlab_external_url }}/api/v4/groups/code-keeper/variables/{{ item }}"
+#     method: DELETE
+#     headers:
+#       PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+#     status_code: [204, 404]
+#   loop:
+#     - "TF_VAR_services"
+#     - "TF_VAR_apigateway_port"
+#     - "TF_VAR_inventory_app_port"
+#     - "TF_VAR_billing_app_port"
+#     - "TF_VAR_rabbitmq_port"
+#     - "TF_VAR_inventory_db_port"
+#     - "TF_VAR_billing_db_port"
+#     - "TF_VAR_dockerhub_password"
+#     - "TF_VAR_certificate_arn"
+#     - "TF_VAR_backend_server_name"
+
+# - name: Define Terraform TF_VAR CI/CD variables at Group Level
+#   ansible.builtin.uri:
+#     url: "{{ gitlab_external_url }}/api/v4/groups/code-keeper/variables"
+#     method: POST
+#     headers:
+#       PRIVATE-TOKEN: "{{ gitlab_api_token }}"
+#     body_format: json
+#     body:
+#       key: "{{ item.key }}"
+#       value: "{{ item.value | string | trim }}"
+#       protected: false
+#       masked: "{{ item.masked | default(false) }}"
+#     status_code: [201, 400]
+#   loop:
+#     - key: 'TF_VAR_services'
+#       value: '{ "api-gateway": { "type": "backend", "image": "madagha/api-gateway:latest" }, "inventory": { "type": "backend", "image": "madagha/inventory:latest" }, "billing": { "type": "backend", "image": "madagha/billing:latest" } }'
+#       masked: false
+#     - { key: 'TF_VAR_apigateway_port', value: '8080', masked: false }
+#     - { key: 'TF_VAR_inventory_app_port', value: '8081', masked: false }
+#     - { key: 'TF_VAR_billing_app_port', value: '8082', masked: false }
+#     - { key: 'TF_VAR_rabbitmq_port', value: '5672', masked: false }
+#     - { key: 'TF_VAR_inventory_db_port', value: '5432', masked: false }
+#     - { key: 'TF_VAR_billing_db_port', value: '5433', masked: false }
+#     - { key: 'TF_VAR_dockerhub_password', value: "{{ dockerhub_password | default('your_dockerhub_token') }}", masked: true }
+#     - { key: 'TF_VAR_certificate_arn', value: "{{ certificate_arn | default('arn:aws:acm:us-east-1:123456789012:certificate/abc-123') }}", masked: false }
+#     - { key: 'TF_VAR_backend_server_name', value: 'api.code-keeper.local', masked: false }
   
 - name: Push microservices code to GitLab repositories via Git Subtree
   ansible.builtin.shell: |
