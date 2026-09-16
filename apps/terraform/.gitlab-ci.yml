@@ -94,7 +94,29 @@ apply_production:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 7. CLEANUP / DESTROY STAGE.
+# 7A. AUTOMATIC DESTROY ON FAILURE
+destroy_on_failure:
+  stage: destroy
+  script:
+    - echo "Pipeline failure detected! Triggering automatic resource cleanup..."
+    - terraform workspace select staging || true
+    - >
+      terraform destroy -auto-approve \
+        -var='services={"gateway":{"type":"backend","image":"dummy","container_port":8080}}' \
+        -var='apigateway_port=8080' \
+        -var='inventory_app_port=8081' \
+        -var='billing_app_port=8082' \
+        -var='rabbitmq_port=5672' \
+        -var='inventory_db_port=5432' \
+        -var='billing_db_port=5433' \
+        -var='dockerhub_password=dummy' \
+        -var='certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/dummy' \
+        -var='backend_server_name=dummy'
+  when: on_failure
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# 7B. MANUAL CLEANUP / DESTROY STAGE.
 destroy_infrastructure:
   stage: destroy
   script:
@@ -102,5 +124,3 @@ destroy_infrastructure:
   when: manual
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-
-# test 
