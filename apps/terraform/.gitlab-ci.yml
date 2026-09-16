@@ -34,10 +34,12 @@ terraform_validate:
 plan_staging:
   stage: plan_staging
   script:
+    - apk add --no-cache bash aws-cli
     - terraform init -reconfigure
     - terraform workspace select staging || terraform workspace new staging
+    - cd apps/terraform
     - chmod +x scripts/generate-imports.sh
-    - ./scripts/generate-imports.sh
+    - bash ./scripts/generate-imports.sh
     - terraform plan -var="import_existing_resources=true" -out=tfplan-staging
   artifacts:
     name: "tfplan-staging"
