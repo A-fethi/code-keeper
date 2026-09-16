@@ -42,18 +42,6 @@ plan_staging:
   stage: plan_staging
   script:
     - terraform workspace select -or-create staging
-    - >
-      terraform plan -input=false -out=tfplan-staging \
-        -var='services={"gateway":{"type":"backend","image":"dummy","container_port":8080}}' \
-        -var='apigateway_port=8080' \
-        -var='inventory_app_port=8081' \
-        -var='billing_app_port=8082' \
-        -var='rabbitmq_port=5672' \
-        -var='inventory_db_port=5432' \
-        -var='billing_db_port=5433' \
-        -var='dockerhub_password=dummy' \
-        -var='certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/dummy' \
-        -var='backend_server_name=dummy'
     - terraform plan -out=tfplan-staging
   artifacts:
     name: "tfplan-staging-$CI_COMMIT_SHORT_SHA"
@@ -112,27 +100,17 @@ destroy_on_failure:
   script:
     - echo "Pipeline failure detected! Triggering automatic resource cleanup..."
     - terraform workspace select staging || true
-    - >
-      terraform destroy -auto-approve \
-        -var='services={"gateway":{"type":"backend","image":"dummy","container_port":8080}}' \
-        -var='apigateway_port=8080' \
-        -var='inventory_app_port=8081' \
-        -var='billing_app_port=8082' \
-        -var='rabbitmq_port=5672' \
-        -var='inventory_db_port=5432' \
-        -var='billing_db_port=5433' \
-        -var='dockerhub_password=dummy' \
-        -var='certificate_arn=arn:aws:acm:us-east-1:123456789012:certificate/dummy' \
-        -var='backend_server_name=dummy'
+    - terraform destroy -input=false -auto-approve
   when: on_failure
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
 # 7B. MANUAL CLEANUP / DESTROY STAGE.
-destroy_infrastructure:
+destroy_manual:
   stage: destroy
   script:
-    - terraform destroy -auto-approve
+    - echo "Manual destroy triggered..."
+    - terraform destroy -input=false -auto-approve
   when: manual
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
