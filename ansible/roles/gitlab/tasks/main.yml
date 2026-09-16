@@ -253,7 +253,7 @@
     - { key: 'TF_VAR_inventory_db_port', value: '5432', masked: false }
     - { key: 'TF_VAR_billing_db_port', value: '5433', masked: false }
     - { key: 'TF_VAR_dockerhub_password', value: "{{ dockerhub_password | default('your_dockerhub_token') }}", masked: true }
-    - { key: 'TF_VAR_certificate_arn', value: "arn:aws:acm:eu-west-3:XXXXXXXXXXXXXXXX:certificate/YOUR-ACTUAL-CERT-ID", masked: false }
+    - { key: 'TF_VAR_certificate_arn', value: "arn:aws:acm:eu-west-3:XXXXXXXXXXXXXXXX:certificate/ee92b69d-48ef-4191-b683-6b53b5c46995", masked: false }
     - { key: 'TF_VAR_backend_server_name', value: 'api.code-keeper.local', masked: false }
 
 - name: Push microservices code to GitLab repositories via Git Subtree
