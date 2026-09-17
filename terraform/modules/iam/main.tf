@@ -115,7 +115,7 @@ resource "aws_iam_role_policy" "application_secrets" {
 }
 
 resource "aws_iam_role_policy" "ecs_secrets_access" {
-  name = "cloud-design-ecs-secrets-access"
+  name = "code-keeper-ecs-secrets-access"
   role = aws_iam_role.ecs_execution.id
 
   policy = jsonencode({

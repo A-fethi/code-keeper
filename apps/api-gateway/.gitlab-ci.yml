@@ -61,7 +61,7 @@ docker_build:
   before_script:
     - apk add --no-cache aws-cli
     - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
-    - REPO_NAME="cloud-design/api-gateway-app"
+    - REPO_NAME="code-keeper/api-gateway-app"
     - IMAGE_URL="$ECR_URL/$REPO_NAME"
     - |
       if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
@@ -76,7 +76,7 @@ docker_build:
       fi
   script:
     - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
-    - REPO_NAME="cloud-design/api-gateway-app"
+    - REPO_NAME="code-keeper/api-gateway-app"
     - IMAGE_URL="$ECR_URL/$REPO_NAME"
     - echo "Building Docker image for inventory ($IMAGE_URL)..."
     - docker build -t $IMAGE_URL:latest -t $IMAGE_URL:$CI_COMMIT_SHORT_SHA .
@@ -98,7 +98,7 @@ staging_deploy:
     name: staging
   script:
     - echo "Deploying api-gateway to Staging environment..."
-    - aws ecs update-service --cluster cloud-design-cluster --service cloud-design-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
+    - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
     - echo "Deployment triggered successfully."
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -125,7 +125,7 @@ production_deploy:
     name: production
   script:
     - echo "Deploying api-gateway to Production environment..."
-    - aws ecs update-service --cluster cloud-design-cluster --service cloud-design-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
+    - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
     - echo "Zero-downtime rolling update completed successfully."
   needs:
     - production_approval

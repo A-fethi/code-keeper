@@ -1,6 +1,6 @@
 # 🛡️ Code-Keeper: Automated CI/CD & Infrastructure for Microservices
 
-Code-Keeper is a complete DevOps automation project built on top of the **Cloud-Design** microservices architecture. It automates the provisioning, testing, scanning, containerizing, and zero-downtime deployment of microservices and cloud infrastructure using a self-hosted **GitLab CE** instance and **GitLab Runners** deployed via **Ansible**.
+Code-Keeper is a complete DevOps automation project built on top of the **code-keeper** microservices architecture. It automates the provisioning, testing, scanning, containerizing, and zero-downtime deployment of microservices and cloud infrastructure using a self-hosted **GitLab CE** instance and **GitLab Runners** deployed via **Ansible**.
 
 ---
 

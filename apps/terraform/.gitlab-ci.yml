@@ -11,9 +11,10 @@ stages:
   - apply_production
   - destroy
 
+# test
 before_script:
   - terraform --version
-  - export AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+  - export AWS_REGION="${AWS_DEFAULT_REGION:-eu-west-3}"
   - |
     if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
       echo "ERROR: AWS credentials (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) are missing in CI!"
@@ -21,6 +22,10 @@ before_script:
       exit 1
     fi
   - printf '%s\n' "$TFVARS_FILE" > terraform.tfvars
+
+  - ls -l terraform.tfvars
+  - wc -l terraform.tfvars
+  
   - terraform init 
 
 # 1. INIT STAGE

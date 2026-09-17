@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Base name for the cloud resources"
   type        = string
-  default     = "cloud-design"
+  default     = "code-keeper"
 }
 
 variable "environment" {
