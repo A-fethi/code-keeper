@@ -24,8 +24,6 @@ before_script:
   - terraform init 
 
 # 1. INIT STAGE
-# test stage
-# test again
 terraform_init:
   stage: init
   script:
@@ -44,6 +42,7 @@ plan_staging:
   stage: plan_staging
   script:
     - terraform workspace select -or-create staging
+    
     - terraform plan -out=tfplan-staging
   artifacts:
     name: "tfplan-staging-$CI_COMMIT_SHORT_SHA"
@@ -96,13 +95,23 @@ apply_production:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 7. CLEANUP / DESTROY STAGE.
-destroy_infrastructure:
+# 7A. AUTOMATIC DESTROY ON FAILURE
+destroy_on_failure:
   stage: destroy
   script:
-    - terraform destroy -auto-approve
-  when: manual
+    - echo "Pipeline failure detected! Triggering automatic resource cleanup..."
+    - terraform workspace select staging || true
+    - terraform destroy -input=false -auto-approve
+  when: on_failure
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# test 
+# 7B. MANUAL CLEANUP / DESTROY STAGE.
+destroy_manual:
+  stage: destroy
+  script:
+    - echo "Manual destroy triggered..."
+    - terraform destroy -input=false -auto-approve
+  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
