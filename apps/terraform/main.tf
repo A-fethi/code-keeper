@@ -127,6 +127,9 @@ module "autoscaling" {
 }
 
 resource "aws_route53_record" "api" {
+  count = var.environment == "prod" ? 1 : 0
+
+  
   zone_id = "Z040559436IOBPJHJZO69"
   name    = var.backend_server_name
   type    = "A"
