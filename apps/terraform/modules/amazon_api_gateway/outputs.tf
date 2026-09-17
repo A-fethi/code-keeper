@@ -20,10 +20,12 @@ output "vpc_link_id" {
 
 output "custom_domain_target" {
   description = "Regional target hostname for the API Gateway custom domain"
-  value       = aws_apigatewayv2_domain_name.main.domain_name_configuration[0].target_domain_name
+  # value       = aws_apigatewayv2_domain_name.main[0].domain_name_configuration[0].target_domain_name
+  value = var.environment == "prod" ? aws_apigatewayv2_domain_name.main[0].domain_name_configuration[0].target_domain_name : null
 }
 
 output "custom_domain_hosted_zone_id" {
   description = "Route 53 hosted zone ID for the API Gateway custom domain"
-  value       = aws_apigatewayv2_domain_name.main.domain_name_configuration[0].hosted_zone_id
+  # value       = aws_apigatewayv2_domain_name.main[0].domain_name_configuration[0].hosted_zone_id
+  value = var.environment == "prod" ? aws_apigatewayv2_domain_name.main[0].domain_name_configuration[0].hosted_zone_id : null
 }

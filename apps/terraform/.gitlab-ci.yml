@@ -196,6 +196,6 @@ destroy_production:
     - terraform destroy -input=false -auto-approve
 
   when: manual
-
+  #test
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

@@ -143,7 +143,8 @@ resource "aws_apigatewayv2_api_mapping" "main" {
   count = var.environment == "prod" ? 1 : 0
 
   api_id      = aws_apigatewayv2_api.main.id
-  domain_name = aws_apigatewayv2_domain_name.main.id
+  # domain_name = aws_apigatewayv2_domain_name.main.id
+  domain_name = aws_apigatewayv2_domain_name.main[0].id
   stage       = aws_apigatewayv2_stage.default.id
 }
 
