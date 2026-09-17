@@ -84,25 +84,8 @@ apply_staging:
 # # "-------------------------------------------------------------------"
 # # "-------------------------------------------------------------------"
 
-# 5. MANUAL APPROVAL GATE
-# test it
-production_approval:
-  stage: approval
 
-  environment:
-    name: production
-
-  script:
-    - echo "Production deployment approved by $GITLAB_USER_LOGIN at $(date)."
-  
-  when: manual
-
-  allow_failure: false
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-
-
-# 6. PLAN TO PRODUCTION
+# 5. PLAN TO PRODUCTION
 
 plan_production:
   stage: plan_production
@@ -120,7 +103,22 @@ plan_production:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+# 6. MANUAL APPROVAL GATE
+# test it
+production_approval:
+  stage: approval
 
+  environment:
+    name: production
+
+  script:
+    - echo "Production deployment approved by $GITLAB_USER_LOGIN at $(date)."
+  
+  when: manual
+
+  allow_failure: false
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 # 7. APPLY TO PRODUCTION
 apply_production:
@@ -131,6 +129,9 @@ apply_production:
 
   needs:
     - job: production_approval
+      artifacts: true
+    - job: plan_production
+      artifacts: true
 
   script:
     - echo "Creating PRODUCTION terraform.tfvars..."
@@ -165,11 +166,36 @@ destroy_on_failure:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
 # 7B. MANUAL CLEANUP / DESTROY STAGE.
-destroy_manual:
+# destroy_manual:
+#   stage: destroy
+#   script:
+#     - echo "Manual destroy triggered..."
+#     - terraform destroy -input=false -auto-approve
+#   when: manual
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+destroy_staging:
   stage: destroy
+
   script:
-    - echo "Manual destroy triggered..."
+    - printf '%s\n' "$TFVARS_STAGING_FILE" > terraform.tfvars
+    - terraform workspace select staging
     - terraform destroy -input=false -auto-approve
+
   when: manual
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+destroy_production:
+  stage: destroy
+
+  script:
+    - printf '%s\n' "$TFVARS_PROD_FILE" > terraform.tfvars
+    - terraform workspace select production
+    - terraform destroy -input=false -auto-approve
+
+  when: manual
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

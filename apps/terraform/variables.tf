@@ -73,7 +73,6 @@ variable "services" {
 variable "apigateway_port" {
   type        = number
   description = "Port exposed by the API Gateway"
-
   validation {
     condition     = var.apigateway_port >= 1 && var.apigateway_port <= 65535
     error_message = "apigateway_port must be between 1 and 65535."
@@ -203,6 +202,7 @@ variable "certificate_arn" {
 variable "backend_server_name" {
   description = "Backend server name for the API Gateway"
   type        = string
+  default = ""
 }
 
 # variable "cognito_callback_urls" {
