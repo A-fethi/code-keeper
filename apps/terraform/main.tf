@@ -105,6 +105,8 @@ module "ecs" {
 module "rds" {
   source = "./modules/rds"
 
+  environment           = var.environment
+
   vpc_id               = module.networking.vpc_id
   private_subnet_cidrs = module.networking.private_subnet_ids
   aws_security_group   = module.security.db_security_group_id

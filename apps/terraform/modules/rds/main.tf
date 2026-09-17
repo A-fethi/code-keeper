@@ -15,12 +15,12 @@ data "aws_kms_alias" "ssm" {
 # inventory-db
 
 resource "aws_db_subnet_group" "main" {
-  name = "code-keeper-db-subnet-group"
+  name = "code-keeper-${environment}-db-subnet-group"
   # subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
   subnet_ids = var.private_subnet_cidrs
 
   tags = {
-    Name = "code-keeper-db-subnet-group"
+    Name = "code-keeper-${environment}-db-subnet-group"
   }
 }
 
@@ -30,17 +30,17 @@ resource "random_password" "inventory_db" {
 }
 
 resource "aws_ssm_parameter" "inventory_db_password" {
-  name   = "/code-keeper/inventory-db/password"
+  name   = "/code-keeper/inventory-${environment}-db/password"
   type   = "SecureString"
   value  = random_password.inventory_db.result
   key_id = data.aws_kms_alias.ssm.arn
   tags = {
-    Name = "code-keeper-inventory-db-password"
+    Name = "code-keeper-${environment}-inventory-db-password"
   }
 }
 
 resource "aws_db_instance" "inventory_db" {
-  identifier     = "code-keeper-inventory-db"
+  identifier     = "code-keeper-${environment}-inventory-db"
   engine         = "postgres"
   engine_version = "16"
   instance_class = "db.t3.micro"
@@ -62,7 +62,7 @@ resource "aws_db_instance" "inventory_db" {
   backup_retention_period = 1
 
   tags = {
-    Name = "code-keeper-inventory-db"
+    Name = "code-keeper-${environment}-inventory-db"
   }
 }
 # billing-db
@@ -73,18 +73,18 @@ resource "random_password" "billing_db" {
 }
 
 resource "aws_ssm_parameter" "billing_db_password" {
-  name   = "/code-keeper/billing-db/password"
+  name   = "/code-keeper/billing-${environment}-db/password"
   type   = "SecureString"
   value  = random_password.billing_db.result
   key_id = data.aws_kms_alias.ssm.arn
 
   tags = {
-    Name = "code-keeper-billing-db-password"
+    Name = "code-keeper-${environment}-billing-db-password"
   }
 }
 
 resource "aws_db_instance" "billing_db" {
-  identifier     = "code-keeper-billing-db"
+  identifier     = "code-keeper-${environment}-billing-db"
   engine         = "postgres"
   engine_version = "16"
   instance_class = "db.t3.micro"
@@ -105,7 +105,7 @@ resource "aws_db_instance" "billing_db" {
   backup_retention_period = 1
 
   tags = {
-    Name = "code-keeper-billing-db"
+    Name = "code-keeper-${environment}-billing-db"
   }
 }
 

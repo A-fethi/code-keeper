@@ -127,6 +127,9 @@ resource "aws_apigatewayv2_stage" "default" {
 }
 
 resource "aws_apigatewayv2_domain_name" "main" {
+
+  count = var.environment == "prod" ? 1 : 0
+
   domain_name = var.backend_server_name
 
   domain_name_configuration {
@@ -137,6 +140,8 @@ resource "aws_apigatewayv2_domain_name" "main" {
 }
 
 resource "aws_apigatewayv2_api_mapping" "main" {
+  count = var.environment == "prod" ? 1 : 0
+
   api_id      = aws_apigatewayv2_api.main.id
   domain_name = aws_apigatewayv2_domain_name.main.id
   stage       = aws_apigatewayv2_stage.default.id

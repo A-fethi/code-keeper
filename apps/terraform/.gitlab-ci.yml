@@ -155,15 +155,15 @@ apply_production:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
 # 7A. AUTOMATIC DESTROY ON FAILURE
-destroy_on_failure:
-  stage: destroy
-  script:
-    - echo "Pipeline failure detected! Triggering automatic resource cleanup..."
-    - terraform workspace select staging || true
-    - terraform destroy -input=false -auto-approve
-  when: on_failure
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+# destroy_on_failure:
+#   stage: destroy
+#   script:
+#     - echo "Pipeline failure detected! Triggering automatic resource cleanup..."
+#     - terraform workspace select staging || true
+#     - terraform destroy -input=false -auto-approve
+#   when: on_failure
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
 
 # 7B. MANUAL CLEANUP / DESTROY STAGE.
 # destroy_manual:
@@ -186,7 +186,7 @@ destroy_staging:
 
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-
+# test domain name 
 destroy_production:
   stage: destroy
 
