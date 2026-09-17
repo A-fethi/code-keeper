@@ -23,6 +23,7 @@ before_script:
     fi
   - printf '%s\n' "$TFVARS_FILE" > terraform.tfvars
   # check the tfvars
+  # check bootstrap file
   - ls -l terraform.tfvars
   - wc -l terraform.tfvars
   
