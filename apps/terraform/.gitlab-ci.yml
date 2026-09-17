@@ -25,6 +25,7 @@ before_script:
 
 # 1. INIT STAGE
 # test stage
+# test again
 terraform_init:
   stage: init
   script:
