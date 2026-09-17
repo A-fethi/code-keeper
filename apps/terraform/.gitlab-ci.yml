@@ -24,6 +24,9 @@ before_script:
   - printf '%s\n' "$TFVARS_FILE" > terraform.tfvars
   # check the tfvars
   # check bootstrap file
+  - echo "Checking terraform.tfvars file location..."
+  - pwd 
+  - sudo find / -name "terraform.tfvars"
   - ls -l terraform.tfvars
   - wc -l terraform.tfvars
   
