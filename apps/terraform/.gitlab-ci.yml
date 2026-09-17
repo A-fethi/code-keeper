@@ -8,6 +8,7 @@ stages:
   - plan_staging
   - apply_staging
   - approval
+  - plan_production
   - apply_production
   - destroy
 
@@ -21,15 +22,7 @@ before_script:
       echo "Ensure group variables exist under 'code-keeper' and are marked 'protected: false' if running on an unprotected branch."
       exit 1
     fi
-  - printf '%s\n' "$TFVARS_FILE" > terraform.tfvars
-  # check the tfvars
-  # check bootstrap file
-  - echo "Checking terraform.tfvars file location..."
-  - pwd 
-  - sudo find / -name "terraform.tfvars"
-  - ls -l terraform.tfvars
-  - wc -l terraform.tfvars
-  
+  # - printf '%s\n' "$TFVARS_STAGING_FILE" > terraform.tfvars
   - terraform init 
 
 # 1. INIT STAGE
@@ -50,6 +43,10 @@ terraform_validate:
 plan_staging:
   stage: plan_staging
   script:
+    - printf '%s\n' "$TFVARS_STAGING_FILE" > terraform.tfvars
+    - echo "--------------------------------STAGING-------------------------------------"
+    - cat terraform.tfvars
+    - echo "----------------------------------------------------------------------------------"
     - terraform workspace select -or-create staging
     
     - terraform plan -out=tfplan-staging
@@ -64,44 +61,95 @@ plan_staging:
 # 4. APPLY TO STAGING
 apply_staging:
   stage: apply_staging
+
   environment:
     name: staging
+  
   needs:
     - job: plan_staging
       artifacts: true
+  
   script:
     - terraform workspace select -or-create staging
     - echo "Applying infrastructure changes to STAGING environment..."
     - terraform apply -auto-approve tfplan-staging
     - echo "Staging apply completed successfully."
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+# # "-------------------------------------------------------------------"
+# # "-------------------------------------------------------------------"
+# # "-----------------------------PRODUCTION-----------------------------"
+# # "-------------------------------------------------------------------"
+# # "-------------------------------------------------------------------"
 
 # 5. MANUAL APPROVAL GATE
 # test it
 production_approval:
   stage: approval
+
   environment:
     name: production
+
   script:
     - echo "Production deployment approved by $GITLAB_USER_LOGIN at $(date)."
+  
   when: manual
+
   allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# 6. APPLY TO PRODUCTION
+
+# 6. PLAN TO PRODUCTION
+
+plan_production:
+  stage: plan_production
+
+  script:
+    - printf '%s\n' "$TFVARS_PROD_FILE" > terraform.tfvars
+    - terraform workspace select -or-create production
+    - terraform plan -out=tfplan-production
+
+  artifacts:
+    paths:
+      - tfplan-production
+    expire_in: 1 hour
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+
+
+# 7. APPLY TO PRODUCTION
 apply_production:
   stage: apply_production
+
   environment:
     name: production
+
   needs:
     - job: production_approval
+
   script:
+    - echo "Creating PRODUCTION terraform.tfvars..."
+    - printf '%s\n' "$TFVARS_PROD_FILE" > terraform.tfvars
+
+    - echo "-----> Terraform production variables:"
+    - echo "----------------------------------------------------------------------------------"
+    - cat terraform.tfvars
+    - echo "----------------------------------------------------------------------------------"
     - terraform workspace select -or-create production
+
     - echo "Applying infrastructure changes to PRODUCTION environment..."
-    - terraform apply -auto-approve
+
+    #- terraform plan -out=tfplan-production
+    
+    - terraform apply -auto-approve tfplan-production
+
     - echo "Production apply completed successfully."
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 

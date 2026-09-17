@@ -190,6 +190,8 @@
     - "AWS_SECRET_ACCESS_KEY"
     - "AWS_DEFAULT_REGION"
     - "AWS_ACCOUNT_ID"
+    - "TFVARS_STAGING_FILE"
+    - "TFVARS_PROD_FILE"
 
 - name: Define fresh AWS CI/CD variables at Group Level
   ansible.builtin.uri:
@@ -209,6 +211,8 @@
     - { key: 'AWS_SECRET_ACCESS_KEY', value: "{{ aws_secret_access_key }}", masked: true }
     - { key: 'AWS_DEFAULT_REGION', value: "{{ aws_default_region }}", masked: false }
     - { key: 'AWS_ACCOUNT_ID', value: "{{ aws_account_id }}", masked: false }
+    - { key: 'TFVARS_STAGING_FILE', value: "{{ tfvars_staging_file | default('') }}", masked: false }
+    - { key: 'TFVARS_PROD_FILE', value: "{{ tfvars_prod_file | default('') }}", masked: false }
   
 - name: Push microservices code to GitLab repositories via Git Subtree
   ansible.builtin.shell: |
