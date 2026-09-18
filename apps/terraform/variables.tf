@@ -118,6 +118,11 @@ variable "inventory_db_port" {
   }
 }
 
+variable "inventory_db_host" {
+  type        = string
+  description = "inventory db host treated as env"
+}
+
 variable "billing_db_port" {
   type        = number
   description = "Port exposed by the Billing database"
@@ -128,6 +133,10 @@ variable "billing_db_port" {
   }
 }
 
+variable "billing_db_host" {
+  type        = string
+  description = "billing db host treated as env"
+}
 
 variable "inventory_db_user" {
   description = "Inventory database username"
@@ -202,7 +211,7 @@ variable "certificate_arn" {
 variable "backend_server_name" {
   description = "Backend server name for the API Gateway"
   type        = string
-  default = ""
+  default     = ""
 }
 
 # variable "cognito_callback_urls" {

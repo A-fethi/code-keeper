@@ -16,18 +16,15 @@ locals {
       RABBITMQ_USER     = "${local.application_secret_arn}:rabbitmq_user::"
       RABBITMQ_PASSWORD = "${local.application_secret_arn}:rabbitmq_password::"
     }
+
     inventory = {
       INVENTORY_DB_USER     = "${local.application_secret_arn}:inventory_db_user::"
       INVENTORY_DB_PASSWORD = "${local.application_secret_arn}:inventory_db_password::"
-      INVENTORY_DB_HOST     = "${local.application_secret_arn}:inventory_db_host::"
-      INVENTORY_DB_NAME     = "${local.application_secret_arn}:inventory_db_name::"
     }
 
     billing = {
       BILLING_DB_USER     = "${local.application_secret_arn}:billing_db_user::"
       BILLING_DB_PASSWORD = "${local.application_secret_arn}:billing_db_password::"
-      BILLING_DB_HOST     = "${local.application_secret_arn}:billing_db_host::"
-      BILLING_DB_NAME     = "${local.application_secret_arn}:billing_db_name::"
 
       RABBITMQ_USER     = "${local.application_secret_arn}:rabbitmq_user::"
       RABBITMQ_PASSWORD = "${local.application_secret_arn}:rabbitmq_password::"
@@ -37,28 +34,32 @@ locals {
       RABBITMQ_DEFAULT_USER = "${local.application_secret_arn}:rabbitmq_user::"
       RABBITMQ_DEFAULT_PASS = "${local.application_secret_arn}:rabbitmq_password::"
     }
+
     "inventory-db" = {
-      # POSTGRES_USER     = "${local.application_secret_arn}:inventory_db_user::"
-      # POSTGRES_PASSWORD = "${local.application_secret_arn}:inventory_db_password::"
       POSTGRES_USER     = "${local.application_secret_arn}:inventory_db_user::"
       POSTGRES_PASSWORD = "${local.application_secret_arn}:inventory_db_password::"
       POSTGRES_DB       = "${local.application_secret_arn}:inventory_db_name::"
     }
+
     "billing-db" = {
       POSTGRES_USER     = "${local.application_secret_arn}:billing_db_user::"
       POSTGRES_PASSWORD = "${local.application_secret_arn}:billing_db_password::"
-      # POSTGRES_PASSWORD = local.billing_db_password_arn
-      POSTGRES_DB = "${local.application_secret_arn}:billing_db_name::"
+      POSTGRES_DB       = "${local.application_secret_arn}:billing_db_name::"
     }
   }
   service_environment = {
-    # inventory = {
-    #   INVENTORY_DB_USER = "${local.application_secret_arn}:inventory_db_user::"
-    #   INVENTORY_DB_HOST = "${local.application_secret_arn}:inventory_db_host::"
-    # }
-    # billing = {
-    #   BILLING_DB_USER = "${local.application_secret_arn}:billing_db_user::"
-    #   BILLING_DB_HOST = "${local.application_secret_arn}:billing_db_host::"
-    # }
+    gateway = {
+      APP_PORT = "3000"
+    }
+
+    inventory = {
+      INVENTORY_DB_HOST = var.inventory_db_host
+      INVENTORY_DB_NAME = "inventory_db"
+    }
+
+    billing = {
+      BILLING_DB_HOST = var.billing_db_host
+      BILLING_DB_NAME = "billing_db"
+    }
   }
 }
