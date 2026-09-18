@@ -178,7 +178,7 @@ production_deploy:
 
     - |
       aws ecs describe-clusters \
-        --clusters code-keeper-prod/prod-cluster \
+        --clusters code-keeper-prod-cluster \
         --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
         --query "clusters[0].status" \
         --output text
