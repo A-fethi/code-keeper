@@ -6,7 +6,7 @@ stages:
   - deploy_staging
   - approval
   - deploy_production
-# test
+# test 1
 # 1. BUILD STAGE
 build_app:
   stage: build
@@ -16,7 +16,7 @@ build_app:
     - python -m compileall app/
     - echo "Build successful."
 
-# 2. TEST STAGE
+# 2. TEST STAGEE
 test_app:
   stage: test
   image: python:3.12-alpine
@@ -56,52 +56,84 @@ docker_build:
   services:
     - name: docker:24.0.5-dind
       command: ["--mtu=1450"]
+  
   variables:
     DOCKER_TLS_CERTDIR: ""
+
   before_script:
     - apk add --no-cache aws-cli
-    - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
-    - REPO_NAME="code-keeper/inventory-app"
-    - IMAGE_URL="$ECR_URL/code-keeper/inventory-app"
-    - |
-      if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
-        echo "Ensuring ECR repository '$REPO_NAME' exists..."
-        aws ecr describe-repositories --repository-names "$REPO_NAME" --region ${AWS_DEFAULT_REGION:-us-east-1} || \
-        aws ecr create-repository --repository-name "$REPO_NAME" --region ${AWS_DEFAULT_REGION:-us-east-1}
-        
-        echo "Logging into AWS ECR at $ECR_URL..."
-        aws ecr get-login-password --region ${AWS_DEFAULT_REGION:-us-east-1} | docker login --username AWS --password-stdin $ECR_URL
-      else
-        echo "WARNING: No AWS credentials found in environment. Build will continue locally."
-      fi
-  script:
-    - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
-    - REPO_NAME="code-keeper/inventory-app"
+    - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-eu-west-3}.amazonaws.com"
+    - REPO_NAME="code-keeper/inventory"
     - IMAGE_URL="$ECR_URL/$REPO_NAME"
+    - echo "Logging into AWS ECR at $ECR_URL..."
+    - aws ecr get-login-password --region "${AWS_DEFAULT_REGION:-eu-west-3}" | docker login --username AWS --password-stdin "$ECR_URL"
+  
+  script:
     - echo "Building Docker image for inventory ($IMAGE_URL)..."
-    - docker build -t $IMAGE_URL:latest -t $IMAGE_URL:$CI_COMMIT_SHORT_SHA .
-    - |
-      if [ -n "$AWS_ACCESS_KEY_ID" ]; then
-        echo "Pushing image to ECR..."
-        docker push $IMAGE_URL:latest
-        docker push $IMAGE_URL:$CI_COMMIT_SHORT_SHA
-      fi
-    - echo "Image build completed successfully."
+    - docker build -t "$IMAGE_URL:latest" -t "$IMAGE_URL:$CI_COMMIT_SHORT_SHA" .
+    - echo "Pushing image to ECR..."
+    - docker push "$IMAGE_URL:latest"
+    - docker push "$IMAGE_URL:$CI_COMMIT_SHORT_SHA"
+    - echo "Image build and push completed successfully."
 
 # 6. DEPLOY TO STAGING
+# staging_deploy:
+#   stage: deploy_staging
+#   image:
+#     name: amazon/aws-cli:latest
+#     entrypoint: [""]
+#   environment:
+#     name: staging
+#   script:
+#     - echo "Deploying api-gateway to Staging environment..."
+#     - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
+#     - echo "Deployment triggered successfully."
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
 staging_deploy:
   stage: deploy_staging
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
+
   environment:
     name: staging
+
   script:
-    - echo "Deploying inventory to Staging environment..."
-    - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-inventory-app-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
-    - echo "Deployment triggered successfully."
+    - echo "Checking AWS ECS infrastructure..."
+
+    - |
+      aws ecs describe-clusters \
+        --clusters code-keeper-staging-cluster \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
+        --query "clusters[0].status" \
+        --output text
+
+    - echo "Checking inventory ECS service..."
+
+    - |
+      aws ecs describe-services \
+        --cluster code-keeper-staging-cluster \
+        --services code-keeper-staging-inventory \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
+        --query "services[0].status" \
+        --output text
+
+    - echo "Infrastructure exists. Deploying Gateway..."
+
+    - |
+      aws ecs update-service \
+        --cluster code-keeper-staging-cluster \
+        --service code-keeper-staging-inventory \
+        --force-new-deployment \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}"
+
+    - echo "inventory deployment triggered successfully."
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+
 
 # 7. MANUAL APPROVAL GATE
 production_approval:
@@ -109,25 +141,208 @@ production_approval:
   environment:
     name: production
   script:
-    - echo "Production deployment for inventory approved by stakeholder."
+    - echo "Production deployment for api-inventory approved by stakeholder."
   when: manual
   allow_failure: false
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
 # 8. DEPLOY TO PRODUCTION
+# production_deploy:
+#   stage: deploy_production
+#   image:
+#     name: amazon/aws-cli:latest
+#     entrypoint: [""]
+#   environment:
+#     name: production
+#   script:
+#     - echo "Deploying api-inventory to Production environment..."
+#     - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-inventory-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
+#     - echo "Zero-downtime rolling update completed successfully."
+#   needs:
+#     - production_approval
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+
 production_deploy:
   stage: deploy_production
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
+
   environment:
     name: production
+
   script:
-    - echo "Deploying inventory to Production environment..."
-    - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-inventory-app-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
-    - echo "Zero-downtime rolling update completed successfully."
+    - echo "Checking AWS ECS production infrastructure..."
+
+    - |
+      aws ecs describe-clusters \
+        --clusters code-keeper-prod-cluster \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
+        --query "clusters[0].status" \
+        --output text
+
+    - echo "Checking inventory production ECS service..."
+
+    - |
+      aws ecs describe-services \
+        --cluster code-keeper-prod-cluster \
+        --services code-keeper-prod-inventory \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
+        --query "services[0].status" \
+        --output text
+
+    - echo "Production infrastructure exists. Deploying inventory..."
+
+    - |
+      aws ecs update-service \
+        --cluster code-keeper-prod-cluster \
+        --service code-keeper-prod-inventory \
+        --force-new-deployment \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}"
+
+    - echo "inventory production deployment triggered successfully."
+
   needs:
     - production_approval
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+# test
+
+
+# stages:
+#   - build
+#   - test
+#   - scan
+#   - containerize
+#   - deploy_staging
+#   - approval
+#   - deploy_production
+# # test
+# # 1. BUILD STAGE
+# build_app:
+#   stage: build
+#   image: python:3.12-alpine
+#   script:
+#     - echo "Compiling Python source files..."
+#     - python -m compileall app/
+#     - echo "Build successful."
+
+# # 2. TEST STAGE
+# test_app:
+#   stage: test
+#   image: python:3.12-alpine
+#   before_script:
+#     - pip install --no-cache-dir -r requirements.txt pytest
+#   script:
+#     - echo "Running unit tests with pytest..."
+#     - python -m pytest -v
+
+# # 3. SCAN STAGE (Security SAST & Dependency Scan)
+# security_scan:
+#   stage: scan
+#   image: python:3.12-alpine
+#   before_script:
+#     - pip install --no-cache-dir bandit pip-audit
+#   script:
+#     - echo "Scanning Python source code with Bandit..."
+#     - bandit -r app/ -ll -i || true
+#     - echo "Scanning dependencies for CVEs with pip-audit..."
+#     - pip-audit -r requirements.txt || true
+
+# # 4. CONTAINER SCAN STAGE (Trivy)
+# container_scan:
+#   stage: scan
+#   image:
+#     name: aquasec/trivy:latest
+#     entrypoint: [""]
+#   script:
+#     - echo "Scanning repository for container & misconfiguration vulnerabilities..."
+#     - trivy fs --exit-code 0 --severity HIGH,CRITICAL .
+
+# # 5. CONTAINERIZE STAGE
+# docker_build:
+#   stage: containerize
+#   image: docker:24.0.5
+#   retry: 2
+#   services:
+#     - name: docker:24.0.5-dind
+#       command: ["--mtu=1450"]
+#   variables:
+#     DOCKER_TLS_CERTDIR: ""
+#   before_script:
+#     - apk add --no-cache aws-cli
+#     - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+#     - REPO_NAME="code-keeper/inventory"
+#     - IMAGE_URL="$ECR_URL/code-keeper/inventory"
+#     - |
+#       if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+#         echo "Ensuring ECR repository '$REPO_NAME' exists..."
+#         aws ecr describe-repositories --repository-names "$REPO_NAME" --region ${AWS_DEFAULT_REGION:-us-east-1} || \
+#         aws ecr create-repository --repository-name "$REPO_NAME" --region ${AWS_DEFAULT_REGION:-us-east-1}
+        
+#         echo "Logging into AWS ECR at $ECR_URL..."
+#         aws ecr get-login-password --region ${AWS_DEFAULT_REGION:-us-east-1} | docker login --username AWS --password-stdin $ECR_URL
+#       else
+#         echo "WARNING: No AWS credentials found in environment. Build will continue locally."
+#       fi
+#   script:
+#     - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
+#     - REPO_NAME="code-keeper/inventory"
+#     - IMAGE_URL="$ECR_URL/$REPO_NAME"
+#     - echo "Building Docker image for inventory ($IMAGE_URL)..."
+#     - docker build -t $IMAGE_URL:latest -t $IMAGE_URL:$CI_COMMIT_SHORT_SHA .
+#     - |
+#       if [ -n "$AWS_ACCESS_KEY_ID" ]; then
+#         echo "Pushing image to ECR..."
+#         docker push $IMAGE_URL:latest
+#         docker push $IMAGE_URL:$CI_COMMIT_SHORT_SHA
+#       fi
+#     - echo "Image build completed successfully."
+
+# # 6. DEPLOY TO STAGING
+# staging_deploy:
+#   stage: deploy_staging
+#   image:
+#     name: amazon/aws-cli:latest
+#     entrypoint: [""]
+#   environment:
+#     name: staging
+#   script:
+#     - echo "Deploying inventory to Staging environment..."
+#     - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-staging-inventory --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
+#     - echo "Deployment triggered successfully."
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+
+# # 7. MANUAL APPROVAL GATE
+# production_approval:
+#   stage: approval
+#   environment:
+#     name: production
+#   script:
+#     - echo "Production deployment for inventory approved by stakeholder."
+#   when: manual
+#   allow_failure: false
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+
+# # 8. DEPLOY TO PRODUCTION
+# production_deploy:
+#   stage: deploy_production
+#   image:
+#     name: amazon/aws-cli:latest
+#     entrypoint: [""]
+#   environment:
+#     name: production
+#   script:
+#     - echo "Deploying inventory to Production environment..."
+#     - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-inventory-app-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
+#     - echo "Zero-downtime rolling update completed successfully."
+#   needs:
+#     - production_approval
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
