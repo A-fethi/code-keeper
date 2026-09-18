@@ -2,6 +2,21 @@ image:
   name: hashicorp/terraform:1.16
   entrypoint: [""]
 
+
+# adding reset stage
+workflow:
+  rules:
+    # RESET pipeline
+    - if: '$PIPELINE_MODE == "reset"'
+
+    # Normal deployment
+    - if: '$PIPELINE_MODE == "deploy"'
+
+    # Default: normal deployment on main
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+
+
 stages:
   - init
   - validate
@@ -31,6 +46,8 @@ terraform_init:
   script:
     - echo "Terraform initialization successful."
     - terraform version
+  rules:
+  - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
 # 2. VALIDATE STAGE
 terraform_validate:
@@ -38,6 +55,8 @@ terraform_validate:
   script:
     - terraform validate
     - echo "Validation passed."
+  rules:
+  - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
 # 3. PLAN STAGE
 plan_staging:
@@ -56,7 +75,7 @@ plan_staging:
       - tfplan-staging
     expire_in: 1 hour
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
 # 4. APPLY TO STAGING
 apply_staging:
@@ -76,7 +95,7 @@ apply_staging:
     - echo "Staging apply completed successfully."
 
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
 # # "-------------------------------------------------------------------"
 # # "-------------------------------------------------------------------"
@@ -101,7 +120,7 @@ plan_production:
     expire_in: 1 hour
 
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
 # 6. MANUAL APPROVAL GATE
 # test it
@@ -118,7 +137,7 @@ production_approval:
 
   allow_failure: false
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
 # 7. APPLY TO PRODUCTION
 apply_production:
@@ -152,7 +171,7 @@ apply_production:
     - echo "Production apply completed successfully."
 
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
 # 7A. AUTOMATIC DESTROY ON FAILURE
 # destroy_on_failure:
@@ -186,6 +205,8 @@ destroy_staging:
 
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+    
 # test domain name 
 destroy_production:
   stage: destroy
@@ -199,3 +220,57 @@ destroy_production:
   #test xx
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+# stage 
+
+reset_staging:
+  stage: destroy
+
+  script:
+    - echo "=========================================="
+    - echo "RESET MODE"
+    - echo "DESTROYING STAGING"
+    - echo "=========================================="
+
+    - printf '%s\n' "$TFVARS_STAGING_FILE" > terraform.tfvars
+
+    - terraform workspace select staging
+
+    - terraform plan -destroy -out=destroy-staging.tfplan
+
+    - terraform apply -auto-approve destroy-staging.tfplan
+
+    - echo "=========================================="
+    - echo "STAGING DESTROYED"
+    - echo "=========================================="
+
+  rules:
+    - if: '$PIPELINE_MODE == "reset" && $CI_COMMIT_BRANCH == "main"'
+
+
+reset_production:
+  stage: destroy
+
+  needs:
+    - job: reset_staging
+
+  script:
+    - echo "=========================================="
+    - echo "RESET MODE"
+    - echo "DESTROYING PRODUCTION"
+    - echo "=========================================="
+
+    - printf '%s\n' "$TFVARS_PROD_FILE" > terraform.tfvars
+
+    - terraform workspace select production
+
+    - terraform plan -destroy -out=destroy-production.tfplan
+
+    - terraform apply -auto-approve destroy-production.tfplan
+
+    - echo "=========================================="
+    - echo "PRODUCTION DESTROYED"
+    - echo "=========================================="
+
+  rules:
+    - if: '$PIPELINE_MODE == "reset" && $CI_COMMIT_BRANCH == "main"'
