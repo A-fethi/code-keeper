@@ -139,7 +139,7 @@ production_approval:
   rules:
     - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
-# changing 2
+# changing 3
 
 # 7. APPLY TO PRODUCTION
 apply_production:
