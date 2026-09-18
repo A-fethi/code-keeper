@@ -56,52 +56,84 @@ docker_build:
   services:
     - name: docker:24.0.5-dind
       command: ["--mtu=1450"]
+  
   variables:
     DOCKER_TLS_CERTDIR: ""
+
   before_script:
     - apk add --no-cache aws-cli
-    - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
-    - REPO_NAME="code-keeper/api-gateway-app"
+    - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-eu-west-3}.amazonaws.com"
+    - REPO_NAME="code-keeper/gateway"
     - IMAGE_URL="$ECR_URL/$REPO_NAME"
-    - |
-      if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
-        echo "Ensuring ECR repository '$REPO_NAME' exists..."
-        aws ecr describe-repositories --repository-names "$REPO_NAME" --region ${AWS_DEFAULT_REGION:-us-east-1} || \
-        aws ecr create-repository --repository-name "$REPO_NAME" --region ${AWS_DEFAULT_REGION:-us-east-1}
-        
-        echo "Logging into AWS ECR at $ECR_URL..."
-        aws ecr get-login-password --region ${AWS_DEFAULT_REGION:-us-east-1} | docker login --username AWS --password-stdin $ECR_URL
-      else
-        echo "WARNING: No AWS credentials found in environment. Build will continue locally."
-      fi
+    - echo "Logging into AWS ECR at $ECR_URL..."
+    - aws ecr get-login-password --region "${AWS_DEFAULT_REGION:-eu-west-3}" | docker login --username AWS --password-stdin "$ECR_URL"
+  
   script:
-    - ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION:-us-east-1}.amazonaws.com"
-    - REPO_NAME="code-keeper/api-gateway-app"
-    - IMAGE_URL="$ECR_URL/$REPO_NAME"
-    - echo "Building Docker image for inventory ($IMAGE_URL)..."
-    - docker build -t $IMAGE_URL:latest -t $IMAGE_URL:$CI_COMMIT_SHORT_SHA .
-    - |
-      if [ -n "$AWS_ACCESS_KEY_ID" ]; then
-        echo "Pushing image to ECR..."
-        docker push $IMAGE_URL:latest
-        docker push $IMAGE_URL:$CI_COMMIT_SHORT_SHA
-      fi
-    - echo "Image build completed successfully."
+    - echo "Building Docker image for gateway ($IMAGE_URL)..."
+    - docker build -t "$IMAGE_URL:latest" -t "$IMAGE_URL:$CI_COMMIT_SHORT_SHA" .
+    - echo "Pushing image to ECR..."
+    - docker push "$IMAGE_URL:latest"
+    - docker push "$IMAGE_URL:$CI_COMMIT_SHORT_SHA"
+    - echo "Image build and push completed successfully."
 
 # 6. DEPLOY TO STAGING
+# staging_deploy:
+#   stage: deploy_staging
+#   image:
+#     name: amazon/aws-cli:latest
+#     entrypoint: [""]
+#   environment:
+#     name: staging
+#   script:
+#     - echo "Deploying api-gateway to Staging environment..."
+#     - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
+#     - echo "Deployment triggered successfully."
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
 staging_deploy:
   stage: deploy_staging
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
+
   environment:
     name: staging
+
   script:
-    - echo "Deploying api-gateway to Staging environment..."
-    - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
-    - echo "Deployment triggered successfully."
+    - echo "Checking AWS ECS infrastructure..."
+
+    - |
+      aws ecs describe-clusters \
+        --clusters code-keeper-staging-cluster \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
+        --query "clusters[0].status" \
+        --output text
+
+    - echo "Checking Gateway ECS service..."
+
+    - |
+      aws ecs describe-services \
+        --cluster code-keeper-staging-cluster \
+        --services code-keeper-staging-gateway \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
+        --query "services[0].status" \
+        --output text
+
+    - echo "Infrastructure exists. Deploying Gateway..."
+
+    - |
+      aws ecs update-service \
+        --cluster code-keeper-staging-cluster \
+        --service code-keeper-staging-gateway \
+        --force-new-deployment \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}"
+
+    - echo "Gateway deployment triggered successfully."
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+
 
 # 7. MANUAL APPROVAL GATE
 production_approval:
@@ -116,18 +148,64 @@ production_approval:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
 # 8. DEPLOY TO PRODUCTION
+# production_deploy:
+#   stage: deploy_production
+#   image:
+#     name: amazon/aws-cli:latest
+#     entrypoint: [""]
+#   environment:
+#     name: production
+#   script:
+#     - echo "Deploying api-gateway to Production environment..."
+#     - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
+#     - echo "Zero-downtime rolling update completed successfully."
+#   needs:
+#     - production_approval
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+
 production_deploy:
   stage: deploy_production
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
+
   environment:
     name: production
+
   script:
-    - echo "Deploying api-gateway to Production environment..."
-    - aws ecs update-service --cluster code-keeper-cluster --service code-keeper-gateway-service --force-new-deployment --region ${AWS_DEFAULT_REGION:-us-east-1}
-    - echo "Zero-downtime rolling update completed successfully."
+    - echo "Checking AWS ECS production infrastructure..."
+
+    - |
+      aws ecs describe-clusters \
+        --clusters code-keeper-prod/prod-cluster \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
+        --query "clusters[0].status" \
+        --output text
+
+    - echo "Checking Gateway production ECS service..."
+
+    - |
+      aws ecs describe-services \
+        --cluster code-keeper-prod-cluster \
+        --services code-keeper-prod-gateway \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}" \
+        --query "services[0].status" \
+        --output text
+
+    - echo "Production infrastructure exists. Deploying Gateway..."
+
+    - |
+      aws ecs update-service \
+        --cluster code-keeper-prod-cluster \
+        --service code-keeper-prod-gateway \
+        --force-new-deployment \
+        --region "${AWS_DEFAULT_REGION:-eu-west-3}"
+
+    - echo "Gateway production deployment triggered successfully."
+
   needs:
     - production_approval
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

@@ -96,6 +96,7 @@ module "ecs" {
   dockerhub_credentials_arn = module.iam.dockerhub_secret_arn
   services = {
     for name, service in var.services : name => merge(service, {
+      image       = contains(["gateway", "billing", "inventory"], name) ? "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${var.project_name}/${name}:latest" : service.image
       environment = merge(service.environment, lookup(local.service_environment, name, {}))
       secrets     = merge(service.secrets, lookup(local.service_secrets, name, {}))
     })
@@ -141,10 +142,10 @@ resource "aws_route53_record" "api" {
   }
 }
 
-# module "S3" {
-#   source = "./modules/S3"
+module "ecr" {
+  source = "./modules/ecr"
 
-#   bucket_name  = "${var.project_name}-${var.environment}-terraform-state"
-#   project_name = var.project_name
-#   environment  = var.environment
-# }
+  project_name = var.project_name
+  environment  = var.environment
+  services     = var.services
+}
