@@ -42,10 +42,10 @@ output "billing_db_host" {
   description = "The host for the billing database"
 }
 
-output "aws_ssm_parameter_inventory_db_password_arn" {
-  value = aws_ssm_parameter.inventory_db_password.arn
-}
+# output "aws_ssm_parameter_inventory_db_password_arn" {
+#   value = aws_ssm_parameter.inventory_db_password.arn
+# }
 
-output "aws_ssm_parameter_billing_db_password_arn" {
-  value = aws_ssm_parameter.billing_db_password.arn
-}
+# output "aws_ssm_parameter_billing_db_password_arn" {
+#   value = aws_ssm_parameter.billing_db_password.arn
+# }

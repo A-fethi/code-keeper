@@ -24,7 +24,7 @@ before_script:
     fi
   # - printf '%s\n' "$TFVARS_STAGING_FILE" > terraform.tfvars
   - terraform init 
-
+# test new infra 
 # 1. INIT STAGE
 terraform_init:
   stage: init
@@ -196,6 +196,6 @@ destroy_production:
     - terraform destroy -input=false -auto-approve
 
   when: manual
-  #test
+  #test xx
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

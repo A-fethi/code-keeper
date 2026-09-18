@@ -114,39 +114,39 @@ resource "aws_iam_role_policy" "application_secrets" {
   })
 }
 
-resource "aws_iam_role_policy" "ecs_secrets_access" {
-  name = "code-keeper-ecs-secrets-access"
-  role = aws_iam_role.ecs_execution.id
+# resource "aws_iam_role_policy" "ecs_secrets_access" {
+#   name = "code-keeper-ecs-secrets-access"
+#   role = aws_iam_role.ecs_execution.id
 
-  policy = jsonencode({
-    Version = "2012-10-17"
+#   policy = jsonencode({
+#     Version = "2012-10-17"
 
-    Statement = [
-      {
-        Effect = "Allow"
+#     Statement = [
+#       {
+#         Effect = "Allow"
 
-        Action = [
-          "ssm:GetParameter",
-          "ssm:GetParameters"
-        ]
+#         Action = [
+#           "ssm:GetParameter",
+#           "ssm:GetParameters"
+#         ]
 
-        Resource = [
-          var.inventory_db_password_arn,
-          var.billing_db_password_arn
-        ]
-      },
-      {
-        Effect = "Allow"
+#         Resource = [
+#           var.inventory_db_password_arn,
+#           var.billing_db_password_arn
+#         ]
+#       },
+#       {
+#         Effect = "Allow"
 
-        Action = [
-          "kms:Decrypt"
-        ]
+#         Action = [
+#           "kms:Decrypt"
+#         ]
 
-        Resource = [
-          data.aws_kms_key.ssm.arn
-        ]
-      }
-    ]
-  })
-}
+#         Resource = [
+#           data.aws_kms_key.ssm.arn
+#         ]
+#       }
+#     ]
+#   })
+# }
 

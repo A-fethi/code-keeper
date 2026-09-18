@@ -62,19 +62,19 @@ module "iam" {
   dockerhub_username = var.dockerhub_username
   dockerhub_password = var.dockerhub_password
 
-  inventory_db_password_arn = module.rds.aws_ssm_parameter_inventory_db_password_arn
-  billing_db_password_arn   = module.rds.aws_ssm_parameter_billing_db_password_arn
+  # inventory_db_password_arn = module.rds.aws_ssm_parameter_inventory_db_password_arn
+  # billing_db_password_arn   = module.rds.aws_ssm_parameter_billing_db_password_arn
 
   application_secrets = {
     rabbitmq_user     = var.rabbitmq_user
     rabbitmq_password = var.rabbitmq_password
     // inventory creds
     inventory_db_user     = var.inventory_db_user
-    inventory_db_password = module.rds.inventory_db_password
+    inventory_db_password = var.inventory_db_password
     inventory_db_name     = var.inventory_db_name
     // billing creds
-    billing_db_user     = module.rds.billing_db_user
-    billing_db_password = module.rds.billing_db_password
+    billing_db_user     = var.billing_db_user
+    billing_db_password = var.billing_db_password
     billing_db_name     = var.billing_db_name
   }
 }
@@ -102,16 +102,16 @@ module "ecs" {
   }
 }
 
-module "rds" {
-  source = "./modules/rds"
+# module "rds" {
+#   source = "./modules/rds"
 
-  environment           = var.environment
+#   environment           = var.environment
 
-  vpc_id               = module.networking.vpc_id
-  private_subnet_cidrs = module.networking.private_subnet_ids
-  aws_security_group   = module.security.db_security_group_id
+#   vpc_id               = module.networking.vpc_id
+#   private_subnet_cidrs = module.networking.private_subnet_ids
+#   aws_security_group   = module.security.db_security_group_id
 
-}
+# }
 
 
 module "autoscaling" {
@@ -129,7 +129,7 @@ module "autoscaling" {
 resource "aws_route53_record" "api" {
   count = var.environment == "prod" ? 1 : 0
 
-  
+
   zone_id = "Z040559436IOBPJHJZO69"
   name    = var.backend_server_name
   type    = "A"
