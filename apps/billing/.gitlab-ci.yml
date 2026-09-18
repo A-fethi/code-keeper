@@ -203,7 +203,7 @@ production_deploy:
         --region "${AWS_DEFAULT_REGION:-eu-west-3}"
 
     - echo "Billing production deployment triggered successfully."
-
+  # test
   needs:
     - production_approval
 

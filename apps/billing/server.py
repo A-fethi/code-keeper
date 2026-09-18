@@ -9,11 +9,12 @@ import os
 BILLING_DB_USER = os.getenv("BILLING_DB_USER")
 BILLING_DB_PASSWORD = os.getenv("BILLING_DB_PASSWORD")
 BILLING_DB_NAME = os.getenv("BILLING_DB_NAME")
+BILLING_DB_HOST = os.getenv("BILLING_DB_HOST", "billing-db.internal")
 
 DB_URI = (
     "postgresql://"
     f'{BILLING_DB_USER}:{BILLING_DB_PASSWORD}'
-    f'@billing-db:5432/{BILLING_DB_NAME}'
+    f'@{BILLING_DB_HOST}:5432/{BILLING_DB_NAME}'
 )
 
 engine = create_engine(DB_URI)
