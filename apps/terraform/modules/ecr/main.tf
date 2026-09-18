@@ -7,7 +7,10 @@ locals {
 }
 
 resource "aws_ecr_repository" "service" {
-  for_each = local.ecr_services
+
+  for_each = var.environment == "staging" ? local.ecr_services : {}
+
+  # for_each = local.ecr_services
 
   name = "${var.project_name}/${each.key}"
 
