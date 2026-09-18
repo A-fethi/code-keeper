@@ -16,7 +16,7 @@ build_app:
     - python -m compileall app/
     - echo "Build successful."
 
-# 2. TEST STAGE
+# 2. TEST STAGEE
 test_app:
   stage: test
   image: python:3.12-alpine
