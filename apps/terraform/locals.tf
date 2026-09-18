@@ -17,23 +17,22 @@ locals {
       RABBITMQ_PASSWORD = "${local.application_secret_arn}:rabbitmq_password::"
     }
     inventory = {
+      INVENTORY_DB_USER     = "${local.application_secret_arn}:inventory_db_user::"
       INVENTORY_DB_PASSWORD = "${local.application_secret_arn}:inventory_db_password::"
-      # INVENTORY_DB_HOST     = local.inventory_db_host
-
-      # INVENTORY_DB_USER     = "${local.application_secret_arn}:inventory_db_user::"
-      # INVENTORY_DB_PASSWORD = "${local.application_secret_arn}:inventory_db_password::"
-      INVENTORY_DB_NAME = "${local.application_secret_arn}:inventory_db_name::"
+      INVENTORY_DB_HOST     = "${local.application_secret_arn}:inventory_db_host::"
+      INVENTORY_DB_NAME     = "${local.application_secret_arn}:inventory_db_name::"
     }
+
     billing = {
-      # BILLING_DB_USER     = local.billing_db_username
+      BILLING_DB_USER     = "${local.application_secret_arn}:billing_db_user::"
       BILLING_DB_PASSWORD = "${local.application_secret_arn}:billing_db_password::"
-      # BILLING_DB_HOST     = local.billing_db_host
-      # BILLING_DB_USER     = "${local.application_secret_arn}:billing_db_user::"
-      # BILLING_DB_PASSWORD = "${local.application_secret_arn}:billing_db_password::"
-      BILLING_DB_NAME   = "${local.application_secret_arn}:billing_db_name::"
+      BILLING_DB_HOST     = "${local.application_secret_arn}:billing_db_host::"
+      BILLING_DB_NAME     = "${local.application_secret_arn}:billing_db_name::"
+
       RABBITMQ_USER     = "${local.application_secret_arn}:rabbitmq_user::"
       RABBITMQ_PASSWORD = "${local.application_secret_arn}:rabbitmq_password::"
     }
+
     rabbitmq = {
       RABBITMQ_DEFAULT_USER = "${local.application_secret_arn}:rabbitmq_user::"
       RABBITMQ_DEFAULT_PASS = "${local.application_secret_arn}:rabbitmq_password::"
@@ -53,13 +52,13 @@ locals {
     }
   }
   service_environment = {
-    inventory = {
-      INVENTORY_DB_USER = "${local.application_secret_arn}:inventory_db_user::"
-      INVENTORY_DB_HOST = "${local.application_secret_arn}:inventory_db_host::"
-    }
-    billing = {
-      BILLING_DB_USER = "${local.application_secret_arn}:billing_db_user::"
-      BILLING_DB_HOST = "${local.application_secret_arn}:billing_db_host::"
-    }
+    # inventory = {
+    #   INVENTORY_DB_USER = "${local.application_secret_arn}:inventory_db_user::"
+    #   INVENTORY_DB_HOST = "${local.application_secret_arn}:inventory_db_host::"
+    # }
+    # billing = {
+    #   BILLING_DB_USER = "${local.application_secret_arn}:billing_db_user::"
+    #   BILLING_DB_HOST = "${local.application_secret_arn}:billing_db_host::"
+    # }
   }
 }

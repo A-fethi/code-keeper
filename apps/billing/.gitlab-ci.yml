@@ -6,7 +6,7 @@ stages:
   - deploy_staging
   - approval
   - deploy_production
-
+# test
 # 1. BUILD STAGE
 build_app:
   stage: build
