@@ -139,6 +139,8 @@ production_approval:
   rules:
     - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
 
+# changing
+
 # 7. APPLY TO PRODUCTION
 apply_production:
   stage: apply_production
@@ -206,7 +208,7 @@ destroy_staging:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-    
+
 # test domain name 
 destroy_production:
   stage: destroy
