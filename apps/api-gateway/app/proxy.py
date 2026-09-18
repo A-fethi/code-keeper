@@ -1,3 +1,4 @@
+
 from flask import Blueprint, request, jsonify
 
 import os
@@ -10,12 +11,16 @@ INVENTORY_APP_PORT = os.getenv("INVENTORY_APP_PORT")
 bp = Blueprint("proxy", __name__)
 
 
+@bp.route("/health", methods=["GET"])
+def health():
+    return jsonify(status="ok"), 200
+
+
 @bp.route('/<path:path>', methods=["GET", "POST", "PUT", "DELETE"])
 def gateway(path: str):
     service_mapping = {
         "movies":
             f'http://{INVENTORY_APP_HOST}:{INVENTORY_APP_PORT}',
-
     }
 
     path_parts = path.split('/')
@@ -41,3 +46,4 @@ def gateway(path: str):
             return jsonify(error=f"{e}"), 500
     else:
         return jsonify({'error': 'Service not found'}), 404
+
