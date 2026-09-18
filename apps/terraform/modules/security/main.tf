@@ -55,30 +55,30 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-resource "aws_security_group" "db" {
-  name        = "${local.name_prefix}-db-sg"
-  description = "Allow inbound only from ecs tier"
-  vpc_id      = var.vpc_id
+# resource "aws_security_group" "db" {
+#   name        = "${local.name_prefix}-db-sg"
+#   description = "Allow inbound only from ecs tier"
+#   vpc_id      = var.vpc_id
 
-  ingress {
-    description     = "PostgreSQL from ecs tier only"
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ecs.id]
-  }
+#   ingress {
+#     description     = "PostgreSQL from ecs tier only"
+#     from_port       = 5432
+#     to_port         = 5432
+#     protocol        = "tcp"
+#     security_groups = [aws_security_group.ecs.id]
+#   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
 
-  tags = {
-    Name = "${local.name_prefix}-db-sg"
-  }
-}
+#   tags = {
+#     Name = "${local.name_prefix}-db-sg"
+#   }
+# }
 
 
 # Adding rules to assue the communication between the services and the ALB, as well as between the services themselves.

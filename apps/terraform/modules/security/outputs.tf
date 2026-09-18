@@ -18,7 +18,7 @@ output "aws_security_group" {
   value       = aws_security_group.db.id
 }
 
-output "db_security_group_id" {
-  description = "Security group ID for the RDS instance"
-  value       = aws_security_group.db.id
-}
+# output "db_security_group_id" {
+#   description = "Security group ID for the RDS instance"
+#   value       = aws_security_group.db.id
+# }
