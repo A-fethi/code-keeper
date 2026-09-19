@@ -208,7 +208,7 @@ trigger_inventory:
     branch: main
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-#test
+#tesT 1
 trigger_billing:
   stage: trigger_microservices
   needs:
