@@ -10,9 +10,9 @@ resource "aws_ecr_repository" "service" {
 
   for_each = var.environment == "staging" ? local.ecr_services : {}
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 
   # for_each = local.ecr_services
 
