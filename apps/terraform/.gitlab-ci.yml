@@ -192,7 +192,8 @@ apply_production:
 trigger_api_gateway:
   stage: trigger_microservices
   needs:
-    - job: apply_production
+    - optional: true
+      job: apply_production
   trigger:
     project: code-keeper/api-gateway
     branch: main
@@ -202,7 +203,8 @@ trigger_api_gateway:
 trigger_inventory:
   stage: trigger_microservices
   needs:
-    - job: apply_production
+    - optional: true
+      job: apply_production
   trigger:
     project: code-keeper/inventory
     branch: main
@@ -212,7 +214,10 @@ trigger_inventory:
 trigger_billing:
   stage: trigger_microservices
   needs:
-    - job: apply_production
+    - optional: true
+      job: apply_production
+    # - job: apply_production
+    
   trigger:
     project: code-keeper/billing
     branch: main
