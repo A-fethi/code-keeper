@@ -15,7 +15,7 @@ resource "aws_ecr_repository" "service" {
   # }
 
   # for_each = local.ecr_services
-
+  force_delete = true
   name = "${var.project_name}/${each.key}"
 
   image_scanning_configuration {
