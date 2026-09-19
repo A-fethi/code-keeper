@@ -48,6 +48,8 @@ terraform_init:
     - terraform version
   rules:
   - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
+  - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "test"'
+
 
 # 2. VALIDATE STAGE
 terraform_validate:
@@ -57,6 +59,7 @@ terraform_validate:
     - echo "Validation passed."
   rules:
   - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
+  - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "test"'
 
 # 3. PLAN STAGE
 plan_staging:
@@ -76,6 +79,7 @@ plan_staging:
     expire_in: 1 hour
   rules:
     - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
+    - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "test"'
 
 # 4. APPLY TO STAGING
 apply_staging:
@@ -96,6 +100,8 @@ apply_staging:
 
   rules:
     - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
+      when: manual
+    - when: never
 
 # # "-------------------------------------------------------------------"
 # # "-------------------------------------------------------------------"
@@ -121,6 +127,8 @@ plan_production:
 
   rules:
     - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
+    - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "test"'
+
 
 # 6. MANUAL APPROVAL GATE
 # test it
@@ -138,6 +146,8 @@ production_approval:
   allow_failure: false
   rules:
     - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
+      when: manual
+    - when: never
 
 # changing 12
 
@@ -174,6 +184,9 @@ apply_production:
 
   rules:
     - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
+      when: manual
+    - when: never
+    # - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "test"'
 
 # 7A. AUTOMATIC DESTROY ON FAILURE
 # destroy_on_failure:
@@ -195,33 +208,33 @@ apply_production:
 #   when: manual
 #   rules:
 #     - if: '$CI_COMMIT_BRANCH == "main"'
-destroy_staging:
-  stage: destroy
+# destroy_staging:
+#   stage: destroy
 
-  script:
-    - printf '%s\n' "$TFVARS_STAGING_FILE" > terraform.tfvars
-    - terraform workspace select staging
-    - terraform destroy -input=false -auto-approve
+#   script:
+#     - printf '%s\n' "$TFVARS_STAGING_FILE" > terraform.tfvars
+#     - terraform workspace select staging
+#     - terraform destroy -input=false -auto-approve
 
-  when: manual
+#   when: manual
 
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
 
 
-# test domain name 
-destroy_production:
-  stage: destroy
+# # test domain name 
+# destroy_production:
+#   stage: destroy
 
-  script:
-    - printf '%s\n' "$TFVARS_PROD_FILE" > terraform.tfvars
-    - terraform workspace select production
-    - terraform destroy -input=false -auto-approve
+#   script:
+#     - printf '%s\n' "$TFVARS_PROD_FILE" > terraform.tfvars
+#     - terraform workspace select production
+#     - terraform destroy -input=false -auto-approve
 
-  when: manual
-  #test xx
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+#   when: manual
+#   #test xx
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
 
 # stage 
 

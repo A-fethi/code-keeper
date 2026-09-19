@@ -2,6 +2,7 @@
 set -e
 
 MSG="${1:-update changes}"
+TARGET_BRANCH="test"
 GITLAB_HOST="192.168.56.20"
 # Set GITLAB_SSH_PORT to 22 (or 2222 if mapped to a custom host port)
 GITLAB_SSH_PORT="${GITLAB_SSH_PORT:-22}"
@@ -29,7 +30,7 @@ sync_gitlab_app() {
 
   # Split apps/<service> and push directly via SSH
   if git subtree split --prefix="apps/$APP" -b "temp-$APP"; then
-    git push "$SSH_URL" "temp-$APP:main" --force
+    git push "$SSH_URL" "temp-$APP:$TARGET_BRANCH" --force
     git branch -D "temp-$APP"
   else
     echo "ERROR: Subtree split failed for apps/$APP"
