@@ -192,37 +192,32 @@ apply_production:
 trigger_api_gateway:
   stage: trigger_microservices
   needs:
-    - optional: true
-      job: apply_production
+    - job: apply_production
   trigger:
     project: code-keeper/api-gateway
     branch: main
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $PIPELINE_MODE == "deploy"'
 
 trigger_inventory:
   stage: trigger_microservices
   needs:
-    - optional: true
-      job: apply_production
+    - job: apply_production
   trigger:
     project: code-keeper/inventory
     branch: main
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-#tesT 3
+    - if: '$CI_COMMIT_BRANCH == "main" && $PIPELINE_MODE == "deploy"'
+#tesT 
 trigger_billing:
   stage: trigger_microservices
   needs:
-    - optional: true
-      job: apply_production
-    # - job: apply_production
-    
+    - job: apply_production
   trigger:
     project: code-keeper/billing
     branch: main
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $PIPELINE_MODE == "deploy"'
 
 
 # 7A. AUTOMATIC DESTROY ON FAILURE
