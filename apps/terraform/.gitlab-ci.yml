@@ -25,6 +25,7 @@ stages:
   - approval
   - plan_production
   - apply_production
+  - trigger_microservices
   - destroy
 
 # test
@@ -187,6 +188,37 @@ apply_production:
       when: manual
     - when: never
     # - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "test"'
+# 7. TRIGGER DOWNSTREAM MICROSERVICES
+trigger_api_gateway:
+  stage: trigger_microservices
+  needs:
+    - job: apply_production
+  trigger:
+    project: code-keeper/api-gateway
+    branch: main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+trigger_inventory:
+  stage: trigger_microservices
+  needs:
+    - job: apply_production
+  trigger:
+    project: code-keeper/inventory
+    branch: main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+trigger_billing:
+  stage: trigger_microservices
+  needs:
+    - job: apply_production
+  trigger:
+    project: code-keeper/billing
+    branch: main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 
 # 7A. AUTOMATIC DESTROY ON FAILURE
 # destroy_on_failure:
