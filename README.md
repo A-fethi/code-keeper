@@ -178,8 +178,7 @@ exit
 ```bash
 cd ansible
 export ANSIBLE_CONFIG=./ansible.cfg
-ansible-playbook playbooks/deploy_gitlab.yml
-ansible-playbook playbooks/deploy_runner.yml
+ansible-playbook --ask-vault-pass site.yml
 ```
 
 ### 4. Accessing GitLab
