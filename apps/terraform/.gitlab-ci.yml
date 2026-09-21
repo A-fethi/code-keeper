@@ -62,7 +62,7 @@ terraform_validate:
   - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "main"'
   - if: '$PIPELINE_MODE == "deploy" && $CI_COMMIT_BRANCH == "test"'
 
-# 3. PLAN STAGE   dlkhldf
+# 3. PLAN STAGE1
 plan_staging:
   stage: plan_staging
   script:
