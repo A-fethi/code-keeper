@@ -28,7 +28,7 @@ stages:
   - trigger_microservices
   - destroy
 
-# test
+# test 1
 before_script:
   - terraform --version
   - export AWS_REGION="${AWS_DEFAULT_REGION:-eu-west-3}"
