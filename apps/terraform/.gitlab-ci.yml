@@ -3,7 +3,7 @@ image:
   entrypoint: [""]
 
 
-# adding reset stage
+# adding reset stageeee
 workflow:
   rules:
     # RESET pipeline
